@@ -6,7 +6,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 
 // FIX 1: Point to the correct connection file we fixed earlier
 // Since this file is in /api/, we go back two folders to find db_connection.php
-require '../../db_connection.php'; 
+require 'db_connect.php'; 
 
 $data = json_decode(file_get_contents("php://input"), true);
 

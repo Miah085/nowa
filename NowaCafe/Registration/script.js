@@ -85,23 +85,25 @@ passwordInput.addEventListener('input', validatePassword);
 passwordInput.addEventListener('input', checkMatch); // Check match when main password changes too
 confirmPasswordInput.addEventListener('input', checkMatch);
 
+// ... existing toggle code ...
+
 // --- 4. Form Submission ---
 form.addEventListener('submit', function(e) {
     e.preventDefault();
     
+    // ... get values ...
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const password = passwordInput.value;
     const confirmPassword = confirmPasswordInput.value;
     
-    // Final Validation Check before submitting
     if (password !== confirmPassword) {
-        alert('Passwords do not match');
+        showNotification('Passwords do not match', 'error'); // REPLACED alert
         return;
     }
 
     if (password.length < 8) {
-        alert('Password does not meet requirements');
+        showNotification('Password does not meet requirements', 'error'); // REPLACED alert
         return;
     }
 
@@ -118,11 +120,41 @@ form.addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Registration Successful! Redirecting to login...');
-            window.location.href = '../Login/login.html';
+            showNotification('Registration Successful! Redirecting...', 'success'); // REPLACED alert
+            
+            // Wait 1.5 seconds so they can see the message before leaving
+            setTimeout(() => {
+                window.location.href = '../Login/login.html';
+            }, 1500);
         } else {
-            alert(data.message);
+            showNotification(data.message, 'error'); // REPLACED alert
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Something went wrong. Please try again.', 'error');
+    });
 });
+
+// --- 5. Custom Notification Function ---
+function showNotification(message, type) {
+    // Remove existing notification if any
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+
+    // Create element
+    const notif = document.createElement('div');
+    notif.className = `notification ${type}`;
+    notif.innerHTML = type === 'success' ? `✓ ${message}` : `✕ ${message}`;
+    
+    document.body.appendChild(notif);
+
+    // Trigger animation
+    setTimeout(() => notif.classList.add('show'), 10);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
