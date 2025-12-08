@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - Café Nowa</title>
+    <link rel="stylesheet" href="employee-styles.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">Café Nowa</div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" data-section="orders">
+                <span class="icon">□</span> Orders
+            </a>
+            <a href="#" class="nav-item" data-section="menu">
+                <span class="icon">☕</span> Menu
+            </a>
+            <a href="#" class="nav-item" data-section="schedule">
+                <span class="icon">▦</span> My Schedule
+            </a>
+            <a href="#" class="nav-item" data-section="profile">
+                <span class="icon">●</span> Profile
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1 id="pageTitle">Order Management</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="user-avatar">E</div>
+                    <div class="user-details">
+                        <span class="user-name" id="userName">Employee</span>
+                        <span class="user-role">Staff Member</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Orders Section -->
+        <section id="orders" class="content-section active">
+            <div class="stats-row">
+                <div class="stat-box">
+                    <h3>Pending Orders</h3>
+                    <p class="stat-number">8</p>
+                </div>
+                <div class="stat-box">
+                    <h3>In Progress</h3>
+                    <p class="stat-number">4</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Completed Today</h3>
+                    <p class="stat-number">32</p>
+                </div>
+            </div>
+
+            <div class="orders-container">
+                <h2>Active Orders</h2>
+                <div class="orders-grid">
+                    <div class="order-card pending">
+                        <div class="order-header">
+                            <span class="order-id">#1234</span>
+                            <span class="order-status">Pending</span>
+                        </div>
+                        <div class="order-details">
+                            <p class="customer-name">John Doe</p>
+                            <p class="order-time">5 mins ago</p>
+                        </div>
+                        <div class="order-items">
+                            <p>• 1x Cappuccino</p>
+                            <p>• 1x Croissant</p>
+                        </div>
+                        <div class="order-total">Total: $9.25</div>
+                        <div class="order-actions">
+                            <button class="btn-accept">Accept Order</button>
+                            <button class="btn-reject">Reject</button>
+                        </div>
+                    </div>
+
+                    <div class="order-card processing">
+                        <div class="order-header">
+                            <span class="order-id">#1235</span>
+                            <span class="order-status">Processing</span>
+                        </div>
+                        <div class="order-details">
+                            <p class="customer-name">Jane Smith</p>
+                            <p class="order-time">12 mins ago</p>
+                        </div>
+                        <div class="order-items">
+                            <p>• 2x Espresso</p>
+                            <p>• 1x Muffin</p>
+                        </div>
+                        <div class="order-total">Total: $12.50</div>
+                        <div class="order-actions">
+                            <button class="btn-complete">Mark Complete</button>
+                        </div>
+                    </div>
+
+                    <div class="order-card pending">
+                        <div class="order-header">
+                            <span class="order-id">#1236</span>
+                            <span class="order-status">Pending</span>
+                        </div>
+                        <div class="order-details">
+                            <p class="customer-name">Bob Wilson</p>
+                            <p class="order-time">2 mins ago</p>
+                        </div>
+                        <div class="order-items">
+                            <p>• 1x Latte</p>
+                            <p>• 1x Sandwich</p>
+                        </div>
+                        <div class="order-total">Total: $11.75</div>
+                        <div class="order-actions">
+                            <button class="btn-accept">Accept Order</button>
+                            <button class="btn-reject">Reject</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Menu Section -->
+        <section id="menu" class="content-section">
+            <h2>Menu Items</h2>
+            <div class="menu-grid">
+                <div class="menu-card">
+                    <img src="../landing/assets/espresso.jpg" alt="Espresso">
+                    <div class="menu-info">
+                        <h3>Classic Espresso</h3>
+                        <p>$3.50</p>
+                        <span class="stock-status available">In Stock</span>
+                    </div>
+                </div>
+                <div class="menu-card">
+                    <img src="../landing/assets/cappuccino.jpg" alt="Cappuccino">
+                    <div class="menu-info">
+                        <h3>Cappuccino</h3>
+                        <p>$4.50</p>
+                        <span class="stock-status available">In Stock</span>
+                    </div>
+                </div>
+                <div class="menu-card">
+                    <img src="../landing/assets/latte.jpg" alt="Latte">
+                    <div class="menu-info">
+                        <h3>Caffè Latte</h3>
+                        <p>$4.75</p>
+                        <span class="stock-status low">Low Stock</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Schedule Section -->
+        <section id="schedule" class="content-section">
+            <h2>My Work Schedule</h2>
+            <div class="schedule-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Shift</th>
+                            <th>Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Monday</td>
+                            <td>Morning</td>
+                            <td>8:00 AM - 2:00 PM</td>
+                        </tr>
+                        <tr>
+                            <td>Tuesday</td>
+                            <td>Morning</td>
+                            <td>8:00 AM - 2:00 PM</td>
+                        </tr>
+                        <tr>
+                            <td>Wednesday</td>
+                            <td>Off</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Thursday</td>
+                            <td>Afternoon</td>
+                            <td>2:00 PM - 8:00 PM</td>
+                        </tr>
+                        <tr>
+                            <td>Friday</td>
+                            <td>Afternoon</td>
+                            <td>2:00 PM - 8:00 PM</td>
+                        </tr>
+                        <tr>
+                            <td>Saturday</td>
+                            <td>Morning</td>
+                            <td>8:00 AM - 2:00 PM</td>
+                        </tr>
+                        <tr>
+                            <td>Sunday</td>
+                            <td>Off</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="content-section">
+            <h2>My Profile</h2>
+            <div class="profile-container">
+                <div class="profile-form">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" value="Employee Name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" value="employee@cafenowa.com" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Position</label>
+                        <input type="text" value="Barista" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Change Password</label>
+                        <input type="password" placeholder="New Password">
+                    </div>
+                    <button class="btn-primary">Update Password</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="employee-script.js"></script>
+</body>
+</html>

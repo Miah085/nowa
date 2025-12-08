@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Café Nowa</title>
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">Café Nowa Admin</div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" data-section="overview">
+                <span class="icon">▦</span> Overview
+            </a>
+            <a href="#" class="nav-item" data-section="inventory">
+                <span class="icon">◫</span> Inventory
+            </a>
+            <a href="#" class="nav-item" data-section="products">
+                <span class="icon">☕</span> Products
+            </a>
+            <a href="#" class="nav-item" data-section="orders">
+                <span class="icon">□</span> Orders
+            </a>
+            <a href="#" class="nav-item" data-section="employees">
+                <span class="icon">◉</span> Employees
+            </a>
+            <a href="#" class="nav-item" data-section="customers">
+                <span class="icon">●</span> Customers
+            </a>
+            <a href="#" class="nav-item" data-section="analytics">
+                <span class="icon">◢</span> Analytics
+            </a>
+            <a href="#" class="nav-item" data-section="settings">
+                <span class="icon">◈</span> Settings
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1 id="pageTitle">Dashboard Overview</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <div class="user-details">
+                        <span class="user-name" id="userName">Admin</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Overview Section -->
+        <section id="overview" class="content-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">$</div>
+                    <div class="stat-info">
+                        <h3>$12,450</h3>
+                        <p>Total Revenue Today</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">□</div>
+                    <div class="stat-info">
+                        <h3>156</h3>
+                        <p>Orders Today</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">◉</div>
+                    <div class="stat-info">
+                        <h3>23</h3>
+                        <p>Active Employees</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">★</div>
+                    <div class="stat-info">
+                        <h3>4.8</h3>
+                        <p>Average Rating</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Recent Orders</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#1234</td>
+                                <td>John Doe</td>
+                                <td>$25.50</td>
+                                <td><span class="status completed">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>#1235</td>
+                                <td>Jane Smith</td>
+                                <td>$18.00</td>
+                                <td><span class="status pending">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td>#1236</td>
+                                <td>Bob Wilson</td>
+                                <td>$32.75</td>
+                                <td><span class="status processing">Processing</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inventory Section -->
+        <section id="inventory" class="content-section">
+            <div class="section-header">
+                <h2>Inventory Management</h2>
+                <button class="btn-primary" id="addInventoryBtn">+ Add Inventory Item</button>
+            </div>
+
+            <!-- Stock Alerts -->
+            <div class="alert-cards">
+                <div class="alert-card warning">
+                    <div class="alert-icon">⚠</div>
+                    <div class="alert-content">
+                        <h4>Low Stock Alert</h4>
+                        <p>5 items below minimum quantity</p>
+                    </div>
+                </div>
+                <div class="alert-card danger">
+                    <div class="alert-icon">✕</div>
+                    <div class="alert-content">
+                        <h4>Out of Stock</h4>
+                        <p>2 items need immediate restock</p>
+                    </div>
+                </div>
+                <div class="alert-card success">
+                    <div class="alert-icon">✓</div>
+                    <div class="alert-content">
+                        <h4>Well Stocked</h4>
+                        <p>15 items in good supply</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="inventory-container">
+                <div class="table-controls">
+                    <input type="text" class="search-input" placeholder="Search inventory..." id="inventorySearch">
+                    <select class="filter-select">
+                        <option>All Categories</option>
+                        <option>Coffee Beans</option>
+                        <option>Milk & Dairy</option>
+                        <option>Syrups</option>
+                        <option>Cups & Packaging</option>
+                        <option>Other Supplies</option>
+                    </select>
+                </div>
+
+                <table class="data-table inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Current Stock</th>
+                            <th>Unit</th>
+                            <th>Min. Quantity</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <tr>
+                            <td><strong>Arabica Coffee Beans</strong></td>
+                            <td>Coffee Beans</td>
+                            <td>25 kg</td>
+                            <td>kg</td>
+                            <td>10 kg</td>
+                            <td><span class="status-badge good">Good Stock</span></td>
+                            <td>Dec 7, 2024</td>
+                            <td>
+                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
+                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
+                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Whole Milk</strong></td>
+                            <td>Milk & Dairy</td>
+                            <td>8 L</td>
+                            <td>L</td>
+                            <td>15 L</td>
+                            <td><span class="status-badge low">Low Stock</span></td>
+                            <td>Dec 7, 2024</td>
+                            <td>
+                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
+                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
+                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Vanilla Syrup</strong></td>
+                            <td>Syrups</td>
+                            <td>0 bottles</td>
+                            <td>bottles</td>
+                            <td>5 bottles</td>
+                            <td><span class="status-badge out">Out of Stock</span></td>
+                            <td>Dec 6, 2024</td>
+                            <td>
+                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
+                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
+                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Paper Cups (16oz)</strong></td>
+                            <td>Cups & Packaging</td>
+                            <td>500 pcs</td>
+                            <td>pcs</td>
+                            <td>200 pcs</td>
+                            <td><span class="status-badge good">Good Stock</span></td>
+                            <td>Dec 7, 2024</td>
+                            <td>
+                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
+                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
+                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Caramel Syrup</strong></td>
+                            <td>Syrups</td>
+                            <td>3 bottles</td>
+                            <td>bottles</td>
+                            <td>5 bottles</td>
+                            <td><span class="status-badge low">Low Stock</span></td>
+                            <td>Dec 6, 2024</td>
+                            <td>
+                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
+                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
+                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Stock History -->
+            <div class="stock-history">
+                <h3>Recent Stock Movements</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Item</th>
+                            <th>Action</th>
+                            <th>Quantity</th>
+                            <th>Performed By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dec 7, 2024 10:30 AM</td>
+                            <td>Arabica Coffee Beans</td>
+                            <td><span class="action-badge in">Stock In</span></td>
+                            <td>+10 kg</td>
+                            <td>Admin</td>
+                        </tr>
+                        <tr>
+                            <td>Dec 7, 2024 9:15 AM</td>
+                            <td>Whole Milk</td>
+                            <td><span class="action-badge out">Stock Out</span></td>
+                            <td>-5 L</td>
+                            <td>Employee</td>
+                        </tr>
+                        <tr>
+                            <td>Dec 6, 2024 3:45 PM</td>
+                            <td>Vanilla Syrup</td>
+                            <td><span class="action-badge out">Stock Out</span></td>
+                            <td>-2 bottles</td>
+                            <td>Employee</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products" class="content-section">
+            <div class="section-header">
+                <h2>Product Management</h2>
+                <button class="btn-primary" id="addProductBtn">+ Add New Product</button>
+            </div>
+            <div class="products-grid">
+                <div class="product-card">
+                    <img src="../landing/assets/espresso.jpg" alt="Espresso">
+                    <h4>Classic Espresso</h4>
+                    <p class="product-price">$3.50</p>
+                    <div class="product-actions">
+                        <button class="btn-edit">Edit</button>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <img src="../landing/assets/cappuccino.jpg" alt="Cappuccino">
+                    <h4>Cappuccino</h4>
+                    <p class="product-price">$4.50</p>
+                    <div class="product-actions">
+                        <button class="btn-edit">Edit</button>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <img src="../landing/assets/latte.jpg" alt="Latte">
+                    <h4>Caffè Latte</h4>
+                    <p class="product-price">$4.75</p>
+                    <div class="product-actions">
+                        <button class="btn-edit">Edit</button>
+                        <button class="btn-delete">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Orders Section -->
+        <section id="orders" class="content-section">
+            <h2>Order Management</h2>
+            <div class="filters">
+                <select class="filter-select">
+                    <option>All Orders</option>
+                    <option>Pending</option>
+                    <option>Processing</option>
+                    <option>Completed</option>
+                </select>
+                <input type="date" class="filter-date">
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#1234</td>
+                        <td>John Doe</td>
+                        <td>Dec 5, 2024</td>
+                        <td>2</td>
+                        <td>$25.50</td>
+                        <td><span class="status completed">Completed</span></td>
+                        <td><button class="btn-view">View</button></td>
+                    </tr>
+                    <tr>
+                        <td>#1235</td>
+                        <td>Jane Smith</td>
+                        <td>Dec 5, 2024</td>
+                        <td>1</td>
+                        <td>$18.00</td>
+                        <td><span class="status pending">Pending</span></td>
+                        <td><button class="btn-view">View</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Employees Section -->
+        <section id="employees" class="content-section">
+            <div class="section-header">
+                <h2>Employee Management</h2>
+                <button class="btn-primary" id="addEmployeeBtn">+ Add Employee</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sarah Johnson</td>
+                        <td>sarah@cafenowa.com</td>
+                        <td>Barista</td>
+                        <td><span class="status active">Active</span></td>
+                        <td>
+                            <button class="btn-edit">Edit</button>
+                            <button class="btn-delete">Remove</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Mike Brown</td>
+                        <td>mike@cafenowa.com</td>
+                        <td>Cashier</td>
+                        <td><span class="status active">Active</span></td>
+                        <td>
+                            <button class="btn-edit">Edit</button>
+                            <button class="btn-delete">Remove</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Customers Section -->
+        <section id="customers" class="content-section">
+            <h2>Customer Management</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Total Orders</th>
+                        <th>Total Spent</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>45</td>
+                        <td>$520.00</td>
+                        <td><button class="btn-view">View</button></td>
+                    </tr>
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>32</td>
+                        <td>$380.50</td>
+                        <td><button class="btn-view">View</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="content-section">
+            <h2>Sales Analytics</h2>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>Weekly Revenue</h3>
+                    <p class="analytics-value">$45,230</p>
+                    <span class="analytics-trend positive">+12.5%</span>
+                </div>
+                <div class="analytics-card">
+                    <h3>Monthly Revenue</h3>
+                    <p class="analytics-value">$182,450</p>
+                    <span class="analytics-trend positive">+8.3%</span>
+                </div>
+                <div class="analytics-card">
+                    <h3>Best Selling Item</h3>
+                    <p class="analytics-value">Cappuccino</p>
+                    <span class="analytics-info">245 sold</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="content-section">
+            <h2>Settings</h2>
+            <div class="settings-form">
+                <div class="form-group">
+                    <label>Café Name</label>
+                    <input type="text" value="Café Nowa">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" value="admin@cafenowa.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" value="+63 123 456 7890">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea rows="3">123 Coffee Street, Mendez-Nuñez, Calabarzon, Philippines</textarea>
+                </div>
+                <button class="btn-primary">Save Changes</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Add Inventory Modal -->
+    <div id="addInventoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New Inventory Item</h2>
+            <form id="addInventoryForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Item Name *</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select required>
+                            <option value="">Select Category</option>
+                            <option>Coffee Beans</option>
+                            <option>Milk & Dairy</option>
+                            <option>Syrups</option>
+                            <option>Cups & Packaging</option>
+                            <option>Other Supplies</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Current Stock *</label>
+                        <input type="number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit *</label>
+                        <input type="text" placeholder="e.g., kg, L, pcs" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Minimum Quantity *</label>
+                        <input type="number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Cost</label>
+                        <input type="number" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <input type="text">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Update Stock Modal -->
+    <div id="updateStockModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Update Stock</h2>
+            <form id="updateStockForm">
+                <div class="form-group">
+                    <label>Item Name</label>
+                    <input type="text" readonly value="Arabica Coffee Beans">
+                </div>
+                <div class="form-group">
+                    <label>Action *</label>
+                    <select required>
+                        <option value="">Select Action</option>
+                        <option value="in">Stock In (Add)</option>
+                        <option value="out">Stock Out (Remove)</option>
+                        <option value="adjust">Adjustment</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity *</label>
+                    <input type="number" required>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea rows="3" placeholder="Reason for stock update..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
