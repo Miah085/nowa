@@ -1,17 +1,19 @@
 window.addEventListener('DOMContentLoaded', () => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const userRole = sessionStorage.getItem('userRole');
-    // const userEmail = sessionStorage.getItem('userEmail'); // Old way
-    const userName = sessionStorage.getItem('userName');      // New way
+    const userName = sessionStorage.getItem('userName');
 
-    if (!isLoggedIn || userRole !== 'employee') { //
-        alert('Access denied. Employee privileges required.');
+    // FIXED: Check for 'staff' OR 'employee' (to be safe)
+    if (!isLoggedIn || (userRole !== 'staff')) {
+        alert('Access denied. Staff privileges required.');
         window.location.href = '../login/login.html';
         return;
     }
 
     // Display user NAME instead of email
-    document.getElementById('userName').textContent = userName;
+    if(document.getElementById('userName')) {
+        document.getElementById('userName').textContent = userName;
+    }
 });
 
 // Sidebar navigation
