@@ -6,7 +6,9 @@ header("Access-Control-Allow-Headers: Content-Type");
 
 require 'db_connect.php'; 
 
-// Generate a short random code (e.g., "A7X9-2B")
+// Set Timezone to match your location (Philippines)
+date_default_timezone_set('Asia/Manila'); 
+
 function generateOrderCode() {
     return strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
 }
@@ -17,8 +19,6 @@ if (isset($data['email']) && isset($data['items']) && isset($data['total'])) {
     $email = $data['email'];
     $items = $data['items'];
     $total_amount = $data['total'];
-    
-    // Create the unique code
     $token = generateOrderCode();
 
     try {
@@ -31,12 +31,13 @@ if (isset($data['email']) && isset($data['items']) && isset($data['total'])) {
         if (!$user) throw new Exception("User not found.");
         $user_id = $user['user_id'];
 
-        // Save order with the TOKEN
-        $sql = "INSERT INTO transactions (user_id, order_token, total_amount, status) VALUES (?, ?, ?, 'Pending')";
+        // Insert Order
+        $sql = "INSERT INTO transactions (user_id, order_token, total_amount, status, transaction_date) VALUES (?, ?, ?, 'Pending', NOW())";
         $stmt = $conn->prepare($sql);
         $stmt->execute([$user_id, $token, $total_amount]);
         $transaction_id = $conn->lastInsertId();
 
+        // Insert Items
         $sql_item = "INSERT INTO transaction_items (transaction_id, product_id, quantity, subtotal) VALUES (?, ?, ?, ?)";
         $stmt_item = $conn->prepare($sql_item);
 
@@ -47,12 +48,17 @@ if (isset($data['email']) && isset($data['items']) && isset($data['total'])) {
 
         $conn->commit();
         
-        // Send the token back to frontend
+        // Calculate Expiration Time (Now + 20 mins)
+        // We use DB time to be consistent
+        $stmt_time = $conn->query("SELECT DATE_ADD(transaction_date, INTERVAL 20 MINUTE) as expiry FROM transactions WHERE transaction_id = $transaction_id");
+        $expiry = $stmt_time->fetchColumn();
+
         echo json_encode([
             "success" => true, 
             "message" => "Order placed!", 
             "id" => $transaction_id,
-            "order_token" => $token 
+            "order_token" => $token,
+            "expiry_time" => $expiry // Send this to frontend
         ]);
 
     } catch (Exception $e) {

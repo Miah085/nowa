@@ -166,6 +166,8 @@ window.viewReceipt = function(index) {
 };
 
 // --- 5. Place Order (New) ---
+let orderInterval; // Global variable for timer
+
 function placeOrder() {
     const email = sessionStorage.getItem('userEmail');
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -186,6 +188,10 @@ function placeOrder() {
             backBtn.style.display = 'none';   
 
             document.getElementById('orderCode').textContent = data.order_token;
+            
+            // --- START TIMER ---
+            startCountdown(data.expiry_time);
+
             document.getElementById('orderSummary').innerHTML = cart.map(item => 
                 `<div>${item.name} x${item.quantity} - $${(item.price*item.quantity).toFixed(2)}</div>`
             ).join('');
@@ -201,6 +207,40 @@ function placeOrder() {
         }
     })
     .catch(() => alert("Connection Error"));
+}
+
+// --- TIMER HELPER FUNCTION ---
+function startCountdown(expiryString) {
+    const timerDisplay = document.getElementById('orderTimer');
+    if (!timerDisplay) return;
+    
+    // Clear any existing timer
+    if (orderInterval) clearInterval(orderInterval);
+
+    // Convert SQL date string to JS Date
+    // Replace ' ' with 'T' for Safari/iOS compatibility
+    const expiryDate = new Date(expiryString.replace(' ', 'T'));
+
+    function update() {
+        const now = new Date();
+        const diff = expiryDate - now;
+
+        if (diff <= 0) {
+            timerDisplay.textContent = "Code Expired!";
+            timerDisplay.style.color = "red";
+            clearInterval(orderInterval);
+            return;
+        }
+
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        timerDisplay.textContent = `Code Expires in: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        timerDisplay.style.color = "#d9534f"; // Reddish
+    }
+
+    update(); // Run once immediately
+    orderInterval = setInterval(update, 1000); // Update every second
 }
 
 // --- 6. Static Listeners & Cart ---

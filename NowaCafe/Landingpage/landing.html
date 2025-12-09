@@ -301,13 +301,17 @@
             <p>Your order number is:</p>
             <div class="order-code" id="orderCode">ABC123</div>
             
+            <div id="orderTimer" style="font-size: 1.2rem; font-weight: bold; color: #d9534f; margin: 10px 0;">
+                Code Expires in: 20:00
+            </div>
+
             <div id="orderSummary" class="order-summary-list"></div>
             
             <p class="order-instruction">Please show this code to the employee when picking up your order.</p>
             
             <div class="modal-actions-center">
                 <button class="btn-primary btn-wide" id="closeConfirmation">Got it!</button>
-                <button class="btn-secondary btn-wide" id="backToOrdersBtn" style="display:none; margin-top: 10px;">Back</button>
+                <button class="btn-outline" id="backToOrdersBtn" style="display:none; margin-top: 10px;">Back</button>
             </div>
         </div>
     </div>

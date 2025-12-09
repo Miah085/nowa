@@ -1,3 +1,5 @@
+let currentTab = 'active';
+
 window.addEventListener('DOMContentLoaded', () => {
     // --- Login Check ---
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
@@ -10,91 +12,130 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    // FIX: Update Name AND Avatar
     if(userName) {
-        if(document.getElementById('userName')) {
-            document.getElementById('userName').textContent = userName;
-        }
-        // Grab the first letter and capitalize it
-        const avatarEl = document.getElementById('userAvatar') || document.querySelector('.user-avatar');
-        if(avatarEl) {
-            avatarEl.textContent = userName.charAt(0).toUpperCase();
-        }
+        if(document.getElementById('userName')) document.getElementById('userName').textContent = userName;
+        const avatarEl = document.getElementById('userAvatar');
+        if(avatarEl) avatarEl.textContent = userName.charAt(0).toUpperCase();
     }
 
-    // --- Load Data ---
-    loadLiveOrders();
-    setInterval(loadLiveOrders, 5000); // Poll every 5s
-
+    // --- Init ---
+    loadData();
+    setInterval(loadData, 5000); // Live sync
     setupVerification();
-    setupArchive();
 });
 
-// --- 1. Load Live Orders ---
-function loadLiveOrders() {
-    const grid = document.getElementById('liveOrdersGrid');
-    if (!grid) return;
+// --- Tab Switching ---
+window.switchTab = function(tabName) {
+    currentTab = tabName;
+    
+    // UI Updates
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    // Find the button that was clicked (if event exists) or manually highlight based on logic
+    if(event && event.target) event.target.classList.add('active'); 
 
+    // Show/Hide Containers
+    const viewActive = document.getElementById('viewActive');
+    const viewPending = document.getElementById('viewPending');
+
+    if (viewActive && viewPending) {
+        viewActive.style.display = tabName === 'active' ? 'block' : 'none';
+        viewPending.style.display = tabName === 'pending' ? 'block' : 'none';
+    }
+
+    loadData(); // Refresh current view
+};
+
+// --- Load Active & Pending ---
+function loadData() {
     fetch('../api/get_active_orders.php')
         .then(res => res.json())
         .then(data => {
             if (data.success) {
                 // Update Stats
                 if(data.stats) {
-                    document.getElementById('statPending').textContent = data.stats.pending;
-                    document.getElementById('statProgress').textContent = data.stats.processing;
-                    document.getElementById('statCompleted').textContent = data.stats.completed;
+                    const statPending = document.getElementById('statPending');
+                    const statProgress = document.getElementById('statProgress');
+                    const statCompleted = document.getElementById('statCompleted');
+                    
+                    if(statPending) statPending.textContent = data.stats.pending;
+                    if(statProgress) statProgress.textContent = data.stats.processing;
+                    if(statCompleted) statCompleted.textContent = data.stats.completed;
                 }
 
-                // Update Grid
-                if (data.orders.length === 0) {
-                    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">No active orders.</p>';
-                    return;
-                }
+                // Filter Arrays
+                const pendingOrders = data.orders.filter(o => o.status === 'Pending');
+                const activeOrders = data.orders.filter(o => o.status === 'Processing');
 
-                grid.innerHTML = data.orders.map(order => `
-                    <div class="order-card ${order.status.toLowerCase()}">
-                        <div class="order-header">
-                            <span class="order-id">#${order.id}</span>
-                            <span class="order-status" style="background:${order.status==='Pending'?'#fef3c7':'#dbeafe'}; padding:4px 8px; border-radius:10px;">${order.status}</span>
-                        </div>
-                        <div class="order-details">
-                            <p class="customer-name">${order.customer}</p>
-                            <p class="order-time">${order.time}</p>
-                            <p style="font-size:1.1rem; color:#6b5442; font-weight:bold; margin-top:5px; background:#eee; padding:5px; text-align:center; border-radius:4px;">${order.token}</p>
-                        </div>
-                        <div class="order-items" style="max-height:100px; overflow-y:auto; margin-bottom:10px; border-top:1px dashed #eee; padding-top:5px;">
-                            ${order.items.map(item => `<p style="margin:2px 0;">• ${item.quantity}x ${item.name}</p>`).join('')}
-                        </div>
-                        <div class="order-total" style="font-weight:bold; margin-bottom:10px;">Total: $${order.total}</div>
-                        <div class="order-actions" style="display:flex; gap:5px;">
-                            ${getButtons(order)}
-                        </div>
-                    </div>
-                `).join('');
+                // Render Active (Processing)
+                renderGrid('activeGrid', activeOrders, 'active');
+
+                // Render Pending
+                renderGrid('pendingGrid', pendingOrders, 'pending');
             }
-        })
-        .catch(err => console.error("Sync Error:", err));
+        });
 }
 
-function getButtons(order) {
-    if (order.status === 'Pending') {
+function renderGrid(elementId, orders, type) {
+    const grid = document.getElementById(elementId);
+    if (!grid) return;
+
+    if (orders.length === 0) {
+        grid.innerHTML = `<p class="loading-text">No ${type} orders.</p>`;
+        return;
+    }
+
+    grid.innerHTML = orders.map(order => {
+        // Check if expired for styling
+        const isExpired = order.time.includes("EXPIRED");
+        const timeColor = isExpired ? 'red' : '#6b5442';
+
         return `
-            <button class="btn-accept" style="flex:1; background:#10b981; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Processing')">Accept</button>
-            <button class="btn-reject" style="flex:1; background:#ef4444; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Archived')">Archive</button>
+        <div class="order-card ${type === 'active' ? 'processing' : 'pending'}">
+            <div class="order-header">
+                <span class="order-id">#${order.id}</span>
+                <span class="order-status" style="background:${type==='pending'?'#fef3c7':'#dbeafe'}; color:${type==='pending'?'#92400e':'#1e40af'}; padding:4px 8px; border-radius:10px;">${order.status}</span>
+            </div>
+            <div class="order-details">
+                <p class="customer-name">${order.customer}</p>
+                
+                <p class="order-time" style="font-weight:bold; color:${timeColor}; margin: 5px 0;">
+                    ⏳ ${order.time}
+                </p>
+
+                <p style="font-size:1.1rem; color:#6b5442; font-weight:bold; margin-top:5px; background:#f5f1ed; padding:8px; text-align:center; border-radius:6px; letter-spacing:1px;">${order.token}</p>
+            </div>
+            <div class="order-items" style="max-height:100px; overflow-y:auto; margin-bottom:10px; border-top:1px dashed #eee; padding-top:5px;">
+                ${order.items.map(item => `<p style="margin:2px 0;">• ${item.quantity}x ${item.name}</p>`).join('')}
+            </div>
+            <div class="order-total" style="font-weight:bold; margin-bottom:10px;">Total: $${order.total}</div>
+            
+            <div class="order-actions" style="display:flex; gap:10px;">
+                ${getButtons(order, type)}
+            </div>
+        </div>
+    `}).join('');
+}
+
+function getButtons(order, type) {
+    if (type === 'pending') {
+        // Pending: Accept (Wide) + Void (Small)
+        return `
+            <button class="btn-accept" style="flex: 2; background:#10b981; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Processing')">Accept</button>
+            <button class="btn-reject" style="flex: 1; background:#ef4444; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Voided')">Void</button>
         `;
-    } else if (order.status === 'Processing') {
+    } else {
+        // Active/Processing: Done (Wide) + Cancel (Small)
         return `
-            <button class="btn-complete" style="width:100%; background:#3b82f6; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Completed')">Mark Ready</button>
+            <button class="btn-complete" style="flex: 2; background:#3b82f6; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="updateStatus(${order.id}, 'Completed')">Done</button>
+            <button class="btn-reject" style="flex: 1; background:#ef4444; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Voided')">Cancel</button>
         `;
     }
-    return '';
 }
 
-// --- 2. Update Status ---
+// --- Status Updates ---
 window.updateStatus = function(orderId, newStatus) {
-    const action = newStatus === 'Archived' ? 'Archive' : 'Update';
-    if (!confirm(`${action} Order #${orderId}?`)) return;
+    // Only confirm for destructive actions (Void/Cancel)
+    if (newStatus === 'Voided' && !confirm(`Are you sure you want to Cancel/Void Order #${orderId}?`)) return;
 
     fetch('../api/update_order_status.php', {
         method: 'POST',
@@ -104,14 +145,15 @@ window.updateStatus = function(orderId, newStatus) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            loadLiveOrders();
+            loadData(); // Refresh immediately
         } else {
             alert("Error: " + data.message);
         }
-    });
+    })
+    .catch(() => alert("Connection failed"));
 };
 
-// --- 3. Verify Logic ---
+// --- Verification ---
 function setupVerification() {
     const btn = document.getElementById('verifyBtn');
     const input = document.getElementById('orderCodeInput');
@@ -136,52 +178,18 @@ function setupVerification() {
                 
                 if(data.success) {
                     input.value = '';
-                    loadLiveOrders();
+                    // If verified, it likely moved to Active, so switch view
+                    switchTab('active'); 
+                    
+                    // Manually update tab styling if needed
+                    const tabs = document.querySelectorAll('.tab-btn');
+                    if(tabs.length > 0) {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tabs[0].classList.add('active'); // Assume Active is first
+                    }
                 }
             });
         });
-    }
-}
-
-// --- 4. Archive Modal Logic ---
-function setupArchive() {
-    const modal = document.getElementById('archiveModal');
-    const btn = document.getElementById('viewArchiveBtn');
-    const close = document.getElementById('closeArchive');
-    const list = document.getElementById('archiveList');
-
-    if(btn) {
-        btn.addEventListener('click', () => {
-            modal.style.display = 'flex'; // Use Flex to center
-            list.innerHTML = '<p>Loading...</p>';
-            
-            fetch('../api/get_archived_orders.php')
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success && data.orders.length > 0) {
-                        list.innerHTML = data.orders.map(o => `
-                            <div style="border-bottom:1px solid #ccc; padding:10px;">
-                                <strong>#${o.transaction_id}</strong> - ${o.username} ($${o.total_amount})<br>
-                                <small>${o.transaction_date}</small> - <span style="color:red;">${o.status}</span>
-                            </div>
-                        `).join('');
-                    } else {
-                        list.innerHTML = '<p style="padding:10px;">No archived orders.</p>';
-                    }
-                });
-        });
-    }
-
-    if(close) {
-        close.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-    }
-    
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
     }
 }
 
