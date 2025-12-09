@@ -472,6 +472,39 @@ body {
     color: var(--dark-color);
 }
 
+/* ... existing styles ... */
+
+/* New styles for Modal Actions */
+.modal-actions-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.btn-wide {
+    min-width: 200px; /* Wider button */
+    text-align: center;
+}
+
+/* Ensure secondary button looks clickable */
+.btn-secondary {
+    cursor: pointer;
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 0.8rem 2rem;
+    border-radius: 30px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
 /* Checkout Modal */
 .checkout-summary {
     margin: 2rem 0;
@@ -1049,6 +1082,27 @@ body {
     padding-top: 2rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.5);
+}
+
+/* Fix for the Back Button in Receipt Modal */
+#backToOrdersBtn {
+    background-color: transparent;
+    color: #6b5442; /* Brown Text (Visible) */
+    border: 2px solid #6b5442; /* Brown Border */
+    padding: 0.8rem 2rem;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s;
+    
+    /* Ensure it has a width matching the other button */
+    min-width: 200px;
+}
+
+#backToOrdersBtn:hover {
+    background-color: #6b5442;
+    color: white;
 }
 
 /* Animations */

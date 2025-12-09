@@ -1,26 +1,34 @@
-// Get form element
+// Get elements
 const form = document.getElementById('loginForm');
+const passwordInput = document.getElementById('password');
+const togglePasswordBtn = document.getElementById('togglePassword');
 
-// Simulated user database (replace with actual database later)
-const defaultUsers = [
-    // Admin accounts
-    { email: 'admin@cafenowa.com', password: 'admin123', role: 'admin' },
-    
-    // Employee accounts
-    { email: 'employee@cafenowa.com', password: 'employee123', role: 'employee' },
-    { email: 'barista@cafenowa.com', password: 'barista123', role: 'employee' },
-    
-    // Customer accounts
-    { email: 'customer@cafenowa.com', password: 'customer123', role: 'customer' },
-    { email: 'john@example.com', password: 'john123', role: 'customer' }
-];
+// --- 1. Toggle Password Visibility ---
+if (togglePasswordBtn && passwordInput) {
+    togglePasswordBtn.addEventListener('click', function() {
+        // Toggle the type attribute
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle the eye icon
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+        
+        // Handle padding
+        if (type === 'text') {
+            passwordInput.classList.add('password-visible');
+        } else {
+            passwordInput.classList.remove('password-visible');
+        }
+    });
+}
 
-// Form submission handler
+// --- 2. Login Form Submission ---
 form.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const password = passwordInput.value;
 
     fetch('../api/login.php', {
         method: 'POST',

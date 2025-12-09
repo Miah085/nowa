@@ -112,7 +112,132 @@
             </div>
 
             <div class="menu-grid" id="menuGrid">
+                <div class="menu-item" data-category="Hot Coffee" data-id="1" data-name="Classic Espresso" data-price="3.50">
+                    <div class="menu-item-image">
+                        <img src="assets/espresso.jpg" alt="Espresso">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Classic Espresso</h3>
+                        <p>Rich and bold single shot</p>
+                        <span class="price">$3.50</span>
+                    </div>
                 </div>
+
+                <div class="menu-item" data-category="Hot Coffee" data-id="2" data-name="Cappuccino" data-price="4.50">
+                    <div class="menu-item-image">
+                        <img src="assets/capuccino.jpg" alt="Cappuccino">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Cappuccino</h3>
+                        <p>Espresso with steamed milk foam</p>
+                        <span class="price">$4.50</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-category="Hot Coffee" data-id="3" data-name="Caffè Latte" data-price="4.75">
+                    <div class="menu-item-image">
+                        <img src="assets/latte.jpg" alt="Caffe Latte">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Caffè Latte</h3>
+                        <p>Smooth espresso with steamed milk</p>
+                        <span class="price">$4.75</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-category="Cold Brew" data-id="4" data-name="Cold Brew" data-price="5.00">
+                    <div class="menu-item-image">
+                        <img src="assets/coldbrew.jpg" alt="Cold Brew">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Cold Brew</h3>
+                        <p>Smooth, naturally sweet</p>
+                        <span class="price">$5.00</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-category="Cold Brew" data-id="5" data-name="Iced Latte" data-price="4.75">
+                    <div class="menu-item-image">
+                        <img src="assets/iced-latte.jpg" alt="Iced Latte">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Iced Latte</h3>
+                        <p>Chilled espresso with milk</p>
+                        <span class="price">$4.75</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-category="Cold Brew" data-id="6" data-name="Caramel Frappé" data-price="5.50">
+                    <div class="menu-item-image">
+                        <img src="assets/frappe.jpg" alt="Frappe">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Caramel Frappé</h3>
+                        <p>Blended iced coffee perfection</p>
+                        <span class="price">$5.50</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-category="Specialty" data-id="7" data-name="Mocha Delight" data-price="5.25">
+                    <div class="menu-item-image">
+                        <img src="assets/mocha.jpg" alt="Mocha">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Mocha Delight</h3>
+                        <p>Espresso with chocolate & cream</p>
+                        <span class="price">$5.25</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-category="Specialty" data-id="8" data-name="Matcha Latte" data-price="5.50">
+                    <div class="menu-item-image">
+                        <img src="assets/matcha.jpg" alt="Matcha Latte">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Matcha Latte</h3>
+                        <p>Premium Japanese green tea</p>
+                        <span class="price">$5.50</span>
+                    </div>
+                </div>
+
+                <div class="menu-item" data-category="Specialty" data-id="9" data-name="Nowa Special" data-price="6.00">
+                    <div class="menu-item-image">
+                        <img src="assets/signature.jpg" alt="Signature">
+                        <div class="menu-overlay">
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-info">
+                        <h3>Nowa Special</h3>
+                        <p>Our secret blend recipe</p>
+                        <span class="price">$6.00</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -175,9 +300,15 @@
             <h2>Order Placed Successfully!</h2>
             <p>Your order number is:</p>
             <div class="order-code" id="orderCode">ABC123</div>
+            
             <div id="orderSummary" class="order-summary-list"></div>
+            
             <p class="order-instruction">Please show this code to the employee when picking up your order.</p>
-            <button class="btn-primary" id="closeConfirmation">Got it!</button>
+            
+            <div class="modal-actions-center">
+                <button class="btn-primary btn-wide" id="closeConfirmation">Got it!</button>
+                <button class="btn-secondary btn-wide" id="backToOrdersBtn" style="display:none; margin-top: 10px;">Back</button>
+            </div>
         </div>
     </div>
 
