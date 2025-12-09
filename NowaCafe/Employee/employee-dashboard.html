@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="employee-styles.css">
 </head>
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo">Café Nowa</div>
         <nav class="nav-menu">
@@ -29,9 +28,7 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
         <header class="header">
             <div class="header-left">
                 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -39,7 +36,7 @@
             </div>
             <div class="header-right">
                 <div class="user-info">
-                    <div class="user-avatar">E</div>
+                    <div class="user-avatar" id="userAvatar">E</div>
                     <div class="user-details">
                         <span class="user-name" id="userName">Employee</span>
                         <span class="user-role">Staff Member</span>
@@ -48,20 +45,19 @@
             </div>
         </header>
 
-        <!-- Orders Section -->
         <section id="orders" class="content-section active">
             <div class="stats-row">
                 <div class="stat-box">
                     <h3>Pending Orders</h3>
-                    <p class="stat-number">8</p>
+                    <p class="stat-number" id="statPending">0</p>
                 </div>
                 <div class="stat-box">
                     <h3>In Progress</h3>
-                    <p class="stat-number">4</p>
+                    <p class="stat-number" id="statProgress">0</p>
                 </div>
                 <div class="stat-box">
                     <h3>Completed Today</h3>
-                    <p class="stat-number">32</p>
+                    <p class="stat-number" id="statCompleted">0</p>
                 </div>
             </div>
 
@@ -70,20 +66,22 @@
                     <h3 style="margin: 0; color: #6b5442;">Verify Customer Code</h3>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="orderCodeInput" placeholder="Enter Code (e.g. A7X92B)" style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">
-                        <button class="btn-primary" id="verifyBtn" style="padding: 0 25px; font-size: 1rem;">Verify & Claim</button>
+                        <button class="btn-primary" id="verifyBtn" style="padding: 0 25px; font-size: 1rem;">Verify</button>
                     </div>
                     <div id="verificationResult" style="display:none; padding: 10px; border-radius: 6px; font-weight: bold;"></div>
-                </div></div>
-                <div class="orders-container">
-                <h2>Active Orders</h2>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2>Active Orders</h2>
+                    <button id="viewArchiveBtn" style="background: #666; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">View Archive</button>
+                </div>
                 
                 <div class="orders-grid" id="liveOrdersGrid">
                     <p style="grid-column: 1/-1; text-align:center; color:#666;">Loading active orders...</p>
                 </div>
             </div>
-            
+        </section>
 
-        <!-- Menu Section -->
         <section id="menu" class="content-section">
             <h2>Menu Items</h2>
             <div class="menu-grid">
@@ -114,7 +112,6 @@
             </div>
         </section>
 
-        <!-- Schedule Section -->
         <section id="schedule" class="content-section">
             <h2>My Work Schedule</h2>
             <div class="schedule-container">
@@ -167,7 +164,6 @@
             </div>
         </section>
 
-        <!-- Profile Section -->
         <section id="profile" class="content-section">
             <h2>My Profile</h2>
             <div class="profile-container">
@@ -192,6 +188,14 @@
                 </div>
             </div>
         </section>
+    </div> <div id="archiveModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeArchive">&times;</span>
+            <h2>Archived / Rejected Orders</h2>
+            <div id="archiveList" style="max-height: 400px; overflow-y: auto;">
+                <p>Loading...</p>
+            </div>
+        </div>
     </div>
 
     <script src="employee-script.js"></script>
