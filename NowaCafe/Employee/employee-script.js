@@ -26,12 +26,9 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSchedule(userEmail); 
     renderProfile(userName, userEmail, userRole);
 
-    // --- FIX: SEPARATE DATA SYNC FROM TIMER ---
-    // 1. Check for new orders every 5 seconds (Prevents card flicker)
-    setInterval(loadData, 5000); 
-    
-    // 2. Update the countdown numbers every 1 second (Smooth timer)
-    setInterval(updateTimers, 1000);
+    // --- 4. Timers ---
+    setInterval(loadData, 5000); // Data sync (5s)
+    setInterval(updateTimers, 1000); // UI Timer (1s)
 
     setupVerification();
     setupNavigation();
@@ -89,34 +86,23 @@ function loadData() {
                 const pendingOrders = data.orders.filter(o => o.status === 'Pending');
                 const activeOrders = data.orders.filter(o => o.status === 'Processing');
                 
-                // Only re-render if the count changes to avoid glitching 
-                // (Optional optimization, but calling renderGrid is fine with 5s interval)
                 renderGrid('activeGrid', activeOrders, 'active');
                 renderGrid('pendingGrid', pendingOrders, 'pending');
-                
-                // Immediately update timers after render so they don't wait 1 second
                 updateTimers();
             }
         });
 }
 
-// --- NEW RENDER GRID (Prepares for Live Timer) ---
 function renderGrid(elementId, orders, type) {
     const grid = document.getElementById(elementId);
     if (!grid) return;
-    
-    // Simple check to avoid clearing selection/hover if data hasn't changed dramatically
-    // For now, we overwrite to ensure new orders appear. 
-    // The 5s interval makes this acceptable.
     
     if (orders.length === 0) {
         grid.innerHTML = `<p class="loading-text">No ${type} orders.</p>`;
         return;
     }
 
-    grid.innerHTML = orders.map(order => {
-        // We set initial text here, but the 'js-timer' class allows the interval to take over
-        return `
+    grid.innerHTML = orders.map(order => `
         <div class="order-card ${type === 'active' ? 'processing' : 'pending'}">
             <div class="order-header">
                 <span class="order-id">#${order.id}</span>
@@ -124,14 +110,7 @@ function renderGrid(elementId, orders, type) {
             </div>
             <div class="order-details">
                 <p class="customer-name">${order.customer}</p>
-                
-                <p class="order-time js-timer" 
-                   data-ts="${order.timestamp}" 
-                   data-type="${type}"
-                   style="font-weight:bold; color:#6b5442;">
-                   Loading...
-                </p>
-
+                <p class="order-time js-timer" data-ts="${order.timestamp}" data-type="${type}" style="font-weight:bold; color:#6b5442;">Loading...</p>
                 <p style="font-size:1.1rem; color:#6b5442; font-weight:bold; margin-top:5px; background:#f5f1ed; padding:8px; text-align:center; border-radius:6px; letter-spacing:1px;">${order.token}</p>
             </div>
             <div class="order-items" style="max-height:100px; overflow-y:auto;">
@@ -142,43 +121,35 @@ function renderGrid(elementId, orders, type) {
                 ${getButtons(order, type)}
             </div>
         </div>
-    `}).join('');
+    `).join('');
 }
 
-// --- NEW INDEPENDENT TIMER FUNCTION ---
 function updateTimers() {
     const timers = document.querySelectorAll('.js-timer');
-    const now = Math.floor(Date.now() / 1000); // Current Unix Timestamp in seconds
+    const now = Math.floor(Date.now() / 1000); 
 
     timers.forEach(timer => {
         const timestamp = parseInt(timer.getAttribute('data-ts'));
         const type = timer.getAttribute('data-type');
 
         if (type === 'pending') {
-            // 20 Minute Countdown
-            const expiryTime = timestamp + (20 * 60); // 20 mins in seconds
+            const expiryTime = timestamp + (20 * 60); 
             const diff = expiryTime - now;
-
             if (diff > 0) {
                 const mins = Math.floor(diff / 60);
                 const secs = diff % 60;
                 timer.textContent = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs} left`;
-                timer.style.color = "#d9534f"; // Reddish urgency
+                timer.style.color = "#d9534f"; 
             } else {
                 timer.textContent = "⚠️ Expired";
                 timer.style.color = "red";
             }
         } else {
-            // Standard "Time Ago" for Active Orders
             const elapsed = now - timestamp;
             const minsAgo = Math.floor(elapsed / 60);
-            
             if(minsAgo < 1) timer.textContent = "🕒 Just now";
             else if(minsAgo < 60) timer.textContent = `🕒 ${minsAgo} mins ago`;
-            else {
-                const hrs = Math.floor(minsAgo/60);
-                timer.textContent = `🕒 ${hrs} hrs ago`;
-            }
+            else timer.textContent = `🕒 ${Math.floor(minsAgo/60)} hrs ago`;
             timer.style.color = "#6b5442";
         }
     });
@@ -215,7 +186,10 @@ function loadMenu() {
                 container.innerHTML = data.products.map(item => {
                     let filename = item.image_url ? item.image_url.split('/').pop() : '';
                     if(filename === 'cappuccino.jpg') filename = 'capuccino.jpg';
-                    const imgPath = filename ? `../Landingpage/assets/${filename}` : '../Login/assets/cup.png'; 
+                    
+                    const imgPath = filename 
+                        ? `../Landingpage/assets/${filename}` 
+                        : '../Login/assets/cup.png'; 
                     const fallbackImg = '../Login/assets/cup.png';
 
                     const stock = parseInt(item.stock_quantity) || 0; 
@@ -243,15 +217,37 @@ function loadMenu() {
 
 // 3. SCHEDULE
 function loadSchedule(email) {
-    const container = document.querySelector('.schedule-container');
+    // FIX: Specifically target the container inside the #schedule section
+    const container = document.querySelector('#schedule .schedule-container');
+    
     if(!container) return;
-    if(!email) { container.innerHTML = '<p style="text-align:center;">No email found. Relogin.</p>'; return; }
+    if(!email) { 
+        container.innerHTML = '<p style="text-align:center;">No email found. Relogin.</p>'; 
+        return; 
+    }
 
-    fetch('../api/get_schedule.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) })
+    fetch('../api/get_schedule.php', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ email: email }) 
+    })
     .then(res => res.json())
     .then(data => {
-        let html = `<table class="schedule-table"><thead><tr><th>Day</th><th>Shift</th><th>Hours</th></tr></thead><tbody>`;
-        if (data.success && data.schedule.length > 0) {
+        // Debugging: Check console to see if ID is found
+        console.log("Schedule Data:", data);
+
+        let html = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Shift</th>
+                        <th>Hours</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        if (data.success && data.schedule && data.schedule.length > 0) {
             html += data.schedule.map(shift => {
                 const start = formatTime(shift.start_time);
                 const end = formatTime(shift.end_time);
@@ -259,10 +255,41 @@ function loadSchedule(email) {
                 return `<tr><td>${shift.day_of_week}</td><td>${type}</td><td>${start} - ${end}</td></tr>`;
             }).join('');
         } else {
-            html += `<tr><td colspan="3" style="text-align:center;">No schedule found.</td></tr>`;
+            html += `<tr><td colspan="3" style="text-align:center;">No schedule found for this user.</td></tr>`;
         }
+        
         html += `</tbody></table>`;
         container.innerHTML = html;
+    });
+}
+
+// --- FIX 2: ARCHIVE (Added Colors) ---
+function loadArchiveOrders() {
+    fetch('../api/get_archived_orders.php').then(res => res.json()).then(data => {
+        const tbody = document.getElementById('archiveTableBody');
+        if(tbody && data.success) {
+            if (data.orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">No archived orders found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.orders.map(o => {
+                // Color Logic
+                let statusClass = 'low';
+                if (o.status === 'Completed') statusClass = 'available';
+                else if (o.status === 'Voided') statusClass = 'voided';
+
+                return `
+                <tr>
+                    <td style="font-weight:bold;">#${o.id}</td>
+                    <td>${o.customer}</td>
+                    <td style="font-weight:bold;">$${o.total}</td>
+                    <td>${o.time}</td>
+                    <td style="text-align:center;">
+                        <span class="stock-status ${statusClass}">${o.status}</span>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
     });
 }
 
@@ -303,17 +330,8 @@ function formatTime(timeString) {
 window.updateStatus = function(orderId, newStatus) {
     if (newStatus === 'Voided' && !confirm(`Confirm Void Order #${orderId}?`)) return;
     fetch('../api/update_order_status.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_id: orderId, status: newStatus }) })
-    .then(res => res.json()).then(data => { if(data.success) loadData(); else alert(data.message); });
+    .then(res => res.json()).then(data => { if(data.success) { loadData(); loadMenu(); } else alert(data.message); });
 };
-
-function loadArchiveOrders() {
-    fetch('../api/get_archived_orders.php').then(res => res.json()).then(data => {
-        const tbody = document.getElementById('archiveTableBody');
-        if(tbody && data.success) {
-            tbody.innerHTML = data.orders.map(o => `<tr><td>#${o.id}</td><td>${o.customer}</td><td>$${o.total}</td><td>${o.time}</td><td>${o.status}</td></tr>`).join('');
-        }
-    });
-}
 
 function setupVerification() {
     const btn = document.getElementById('verifyBtn');
@@ -344,7 +362,7 @@ let currentEditItems = [];
 
 window.openEditModal = function(order) {
     currentEditOrder = order;
-    currentEditItems = JSON.parse(JSON.stringify(order.items)); // Deep copy
+    currentEditItems = JSON.parse(JSON.stringify(order.items)); 
     document.getElementById('editOrderId').textContent = order.id;
     renderEditTable();
     document.getElementById('editOrderModal').style.display = 'flex';
