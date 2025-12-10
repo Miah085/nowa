@@ -30,19 +30,27 @@ window.switchTab = function(tabName) {
     
     // UI Updates
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    // Find the button that was clicked (if event exists) or manually highlight based on logic
     if(event && event.target) event.target.classList.add('active'); 
 
-    // Show/Hide Containers
+    // Get all views
     const viewActive = document.getElementById('viewActive');
     const viewPending = document.getElementById('viewPending');
+    const viewArchive = document.getElementById('viewArchive'); // Add this
 
-    if (viewActive && viewPending) {
-        viewActive.style.display = tabName === 'active' ? 'block' : 'none';
-        viewPending.style.display = tabName === 'pending' ? 'block' : 'none';
+    // Hide all first
+    if (viewActive) viewActive.style.display = 'none';
+    if (viewPending) viewPending.style.display = 'none';
+    if (viewArchive) viewArchive.style.display = 'none';
+
+    // Show the correct one
+    if (tabName === 'active' && viewActive) viewActive.style.display = 'block';
+    if (tabName === 'pending' && viewPending) viewPending.style.display = 'block';
+    if (tabName === 'archive' && viewArchive) {
+        viewArchive.style.display = 'block';
+        loadArchiveOrders(); // We need to create this function
     }
 
-    loadData(); // Refresh current view
+    if (tabName !== 'archive') loadData(); 
 };
 
 // --- Load Active & Pending ---
@@ -71,6 +79,28 @@ function loadData() {
 
                 // Render Pending
                 renderGrid('pendingGrid', pendingOrders, 'pending');
+            }
+        });
+}
+
+function loadArchiveOrders() {
+    fetch('../api/get_archived_orders.php')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('archiveTableBody');
+            if (!tbody) return;
+
+            if (data.success && data.orders.length > 0) {
+                tbody.innerHTML = data.orders.map(order => `
+                    <tr>
+                        <td>#${order.id}</td>
+                        <td>${order.customer}</td>
+                        <td>$${order.total}</td>
+                        <td>${order.time}</td> <td><span class="stock-status ${order.status === 'Completed' ? 'available' : 'low'}">${order.status}</span></td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No archived orders found</td></tr>';
             }
         });
 }
