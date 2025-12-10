@@ -1,10 +1,11 @@
 let currentTab = 'active';
 
 window.addEventListener('DOMContentLoaded', () => {
-    // --- Login Check ---
+    // --- 1. Security Check ---
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const userRole = sessionStorage.getItem('userRole');
     const userName = sessionStorage.getItem('userName');
+    const userEmail = sessionStorage.getItem('userEmail'); // Needed for schedule
 
     if (!isLoggedIn || (userRole !== 'staff' && userRole !== 'employee')) {
         alert('Access denied. Staff privileges required.');
@@ -12,95 +13,87 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
+    // --- 2. Initialize UI ---
     if(userName) {
         if(document.getElementById('userName')) document.getElementById('userName').textContent = userName;
         const avatarEl = document.getElementById('userAvatar');
         if(avatarEl) avatarEl.textContent = userName.charAt(0).toUpperCase();
     }
 
-    // --- Init ---
-    loadData();
-    setInterval(loadData, 5000); // Live sync
+    // --- 3. Load All Data ---
+    loadData();              // Load Orders
+    loadMenu();              // Load Menu items (NEW)
+    loadSchedule(userEmail); // Load Schedule (NEW)
+
+    // Live sync for orders only
+    setInterval(loadData, 5000); 
+
     setupVerification();
+    setupNavigation();
 });
 
-// --- Tab Switching ---
+// --- NAVIGATION & TABS ---
+function setupNavigation() {
+    // Sidebar Navigation
+    document.querySelectorAll('.nav-item').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // UI Active State
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            link.classList.add('active');
+
+            // Show Section
+            const sectionId = link.getAttribute('data-section');
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        });
+    });
+
+    // Mobile Menu
+    const toggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    if(toggle && sidebar) {
+        toggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+    }
+}
+
+// --- ORDER TABS ---
 window.switchTab = function(tabName) {
     currentTab = tabName;
-    
-    // UI Updates
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     if(event && event.target) event.target.classList.add('active'); 
 
-    // Get all views
-    const viewActive = document.getElementById('viewActive');
-    const viewPending = document.getElementById('viewPending');
-    const viewArchive = document.getElementById('viewArchive'); // Add this
+    document.getElementById('viewActive').style.display = 'none';
+    document.getElementById('viewPending').style.display = 'none';
+    document.getElementById('viewArchive').style.display = 'none';
 
-    // Hide all first
-    if (viewActive) viewActive.style.display = 'none';
-    if (viewPending) viewPending.style.display = 'none';
-    if (viewArchive) viewArchive.style.display = 'none';
-
-    // Show the correct one
-    if (tabName === 'active' && viewActive) viewActive.style.display = 'block';
-    if (tabName === 'pending' && viewPending) viewPending.style.display = 'block';
-    if (tabName === 'archive' && viewArchive) {
-        viewArchive.style.display = 'block';
-        loadArchiveOrders(); // We need to create this function
+    if (tabName === 'active') document.getElementById('viewActive').style.display = 'block';
+    if (tabName === 'pending') document.getElementById('viewPending').style.display = 'block';
+    if (tabName === 'archive') {
+        document.getElementById('viewArchive').style.display = 'block';
+        loadArchiveOrders();
     }
-
     if (tabName !== 'archive') loadData(); 
 };
 
-// --- Load Active & Pending ---
+// --- DATA LOADING FUNCTIONS ---
+
+// 1. ORDERS
 function loadData() {
     fetch('../api/get_active_orders.php')
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                // Update Stats
                 if(data.stats) {
-                    const statPending = document.getElementById('statPending');
-                    const statProgress = document.getElementById('statProgress');
-                    const statCompleted = document.getElementById('statCompleted');
-                    
-                    if(statPending) statPending.textContent = data.stats.pending;
-                    if(statProgress) statProgress.textContent = data.stats.processing;
-                    if(statCompleted) statCompleted.textContent = data.stats.completed;
+                    if(document.getElementById('statPending')) document.getElementById('statPending').textContent = data.stats.pending;
+                    if(document.getElementById('statProgress')) document.getElementById('statProgress').textContent = data.stats.processing;
+                    if(document.getElementById('statCompleted')) document.getElementById('statCompleted').textContent = data.stats.completed;
                 }
-
-                // Filter Arrays
                 const pendingOrders = data.orders.filter(o => o.status === 'Pending');
                 const activeOrders = data.orders.filter(o => o.status === 'Processing');
-
-                // Render Active (Processing)
                 renderGrid('activeGrid', activeOrders, 'active');
-
-                // Render Pending
                 renderGrid('pendingGrid', pendingOrders, 'pending');
-            }
-        });
-}
-
-function loadArchiveOrders() {
-    fetch('../api/get_archived_orders.php')
-        .then(res => res.json())
-        .then(data => {
-            const tbody = document.getElementById('archiveTableBody');
-            if (!tbody) return;
-
-            if (data.success && data.orders.length > 0) {
-                tbody.innerHTML = data.orders.map(order => `
-                    <tr>
-                        <td>#${order.id}</td>
-                        <td>${order.customer}</td>
-                        <td>$${order.total}</td>
-                        <td>${order.time}</td> <td><span class="stock-status ${order.status === 'Completed' ? 'available' : 'low'}">${order.status}</span></td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No archived orders found</td></tr>';
             }
         });
 }
@@ -108,82 +101,142 @@ function loadArchiveOrders() {
 function renderGrid(elementId, orders, type) {
     const grid = document.getElementById(elementId);
     if (!grid) return;
-
     if (orders.length === 0) {
         grid.innerHTML = `<p class="loading-text">No ${type} orders.</p>`;
         return;
     }
-
-    grid.innerHTML = orders.map(order => {
-        // Check if expired for styling
-        const isExpired = order.time.includes("EXPIRED");
-        const timeColor = isExpired ? 'red' : '#6b5442';
-
-        return `
+    grid.innerHTML = orders.map(order => `
         <div class="order-card ${type === 'active' ? 'processing' : 'pending'}">
             <div class="order-header">
                 <span class="order-id">#${order.id}</span>
-                <span class="order-status" style="background:${type==='pending'?'#fef3c7':'#dbeafe'}; color:${type==='pending'?'#92400e':'#1e40af'}; padding:4px 8px; border-radius:10px;">${order.status}</span>
+                <span class="order-status">${order.status}</span>
             </div>
             <div class="order-details">
                 <p class="customer-name">${order.customer}</p>
-                
-                <p class="order-time" style="font-weight:bold; color:${timeColor}; margin: 5px 0;">
-                    ⏳ ${order.time}
-                </p>
-
+                <p class="order-time">⏳ ${order.time}</p>
                 <p style="font-size:1.1rem; color:#6b5442; font-weight:bold; margin-top:5px; background:#f5f1ed; padding:8px; text-align:center; border-radius:6px; letter-spacing:1px;">${order.token}</p>
             </div>
-            <div class="order-items" style="max-height:100px; overflow-y:auto; margin-bottom:10px; border-top:1px dashed #eee; padding-top:5px;">
-                ${order.items.map(item => `<p style="margin:2px 0;">• ${item.quantity}x ${item.name}</p>`).join('')}
+            <div class="order-items" style="max-height:100px; overflow-y:auto;">
+                ${order.items.map(item => `<p>• ${item.quantity}x ${item.name}</p>`).join('')}
             </div>
-            <div class="order-total" style="font-weight:bold; margin-bottom:10px;">Total: $${order.total}</div>
-            
+            <div class="order-total">Total: $${order.total}</div>
             <div class="order-actions" style="display:flex; gap:10px;">
                 ${getButtons(order, type)}
             </div>
         </div>
-    `}).join('');
+    `).join('');
 }
 
 function getButtons(order, type) {
     if (type === 'pending') {
-        // Pending: Accept (Wide) + Void (Small)
-        return `
-            <button class="btn-accept" style="flex: 2; background:#10b981; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Processing')">Accept</button>
-            <button class="btn-reject" style="flex: 1; background:#ef4444; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Voided')">Void</button>
-        `;
+        return `<button class="btn-accept" style="flex:2;" onclick="updateStatus(${order.id}, 'Processing')">Accept</button>
+                <button class="btn-reject" style="flex:1;" onclick="updateStatus(${order.id}, 'Voided')">Void</button>`;
     } else {
-        // Active/Processing: Done (Wide) + Cancel (Small)
-        return `
-            <button class="btn-complete" style="flex: 2; background:#3b82f6; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="updateStatus(${order.id}, 'Completed')">Done</button>
-            <button class="btn-reject" style="flex: 1; background:#ef4444; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;" onclick="updateStatus(${order.id}, 'Voided')">Cancel</button>
-        `;
+        return `<button class="btn-complete" style="flex:2;" onclick="updateStatus(${order.id}, 'Completed')">Done</button>
+                <button class="btn-reject" style="flex:1;" onclick="updateStatus(${order.id}, 'Voided')">Cancel</button>`;
     }
 }
 
-// --- Status Updates ---
-window.updateStatus = function(orderId, newStatus) {
-    // Only confirm for destructive actions (Void/Cancel)
-    if (newStatus === 'Voided' && !confirm(`Are you sure you want to Cancel/Void Order #${orderId}?`)) return;
+// 2. MENU (NEW FUNCTION)
+function loadMenu() {
+    const container = document.querySelector('.menu-grid');
+    if(!container) return;
 
+    fetch('../api/get_products.php')
+        .then(res => res.json())
+        .then(data => {
+            if(data.success && data.products.length > 0) {
+                container.innerHTML = data.products.map(item => {
+                    // Logic to set image path
+                    let imgPath = item.image_url ? `../Landingpage/assets/${item.image_url}` : '../Landingpage/assets/cup.png';
+                    // Determine stock status
+                    let stockClass = item.stock_quantity > 10 ? 'available' : 'low';
+                    let stockText = item.stock_quantity > 10 ? 'In Stock' : 'Low Stock';
+                    
+                    return `
+                    <div class="menu-card">
+                        <img src="${imgPath}" onerror="this.src='../Landingpage/assets/cup.png'" alt="${item.name}">
+                        <div class="menu-info">
+                            <h3>${item.name}</h3>
+                            <p>$${parseFloat(item.price).toFixed(2)}</p>
+                            <span class="stock-status ${stockClass}">
+                                ${stockText} (${item.stock_quantity})
+                            </span>
+                        </div>
+                    </div>
+                `}).join('');
+            } else {
+                container.innerHTML = '<p>No menu items found or database connection failed.</p>';
+            }
+        });
+}
+
+// 3. SCHEDULE (NEW FUNCTION)
+function loadSchedule(email) {
+    const container = document.querySelector('.schedule-container');
+    if(!container) return;
+
+    fetch('../api/get_schedule.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+    })
+    .then(res => res.json())
+    .then(data => {
+        let html = `
+            <table class="schedule-table">
+                <thead><tr><th>Day</th><th>Shift</th><th>Hours</th></tr></thead>
+                <tbody>`;
+        
+        if (data.success && data.schedule && data.schedule.length > 0) {
+            html += data.schedule.map(shift => {
+                const start = formatTime(shift.start_time);
+                const end = formatTime(shift.end_time);
+                const type = parseInt(shift.start_time) < 12 ? "Morning" : "Afternoon";
+                return `<tr><td>${shift.day_of_week}</td><td>${type}</td><td>${start} - ${end}</td></tr>`;
+            }).join('');
+        } else {
+            html += `<tr><td colspan="3" style="text-align:center;">No schedule assigned yet.</td></tr>`;
+        }
+        
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    });
+}
+
+// --- UTILS ---
+function formatTime(timeString) {
+    if(!timeString) return "-";
+    const [hours, minutes] = timeString.split(':');
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${h12}:${minutes} ${ampm}`;
+}
+
+window.updateStatus = function(orderId, newStatus) {
+    if (newStatus === 'Voided' && !confirm(`Confirm Void Order #${orderId}?`)) return;
     fetch('../api/update_order_status.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order_id: orderId, status: newStatus })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            loadData(); // Refresh immediately
-        } else {
-            alert("Error: " + data.message);
-        }
-    })
-    .catch(() => alert("Connection failed"));
+    }).then(res => res.json()).then(data => {
+        if(data.success) loadData();
+        else alert(data.message);
+    });
 };
 
-// --- Verification ---
+function loadArchiveOrders() {
+    fetch('../api/get_archived_orders.php')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('archiveTableBody');
+            if(tbody && data.success) {
+                tbody.innerHTML = data.orders.map(o => `<tr><td>#${o.id}</td><td>${o.customer}</td><td>$${o.total}</td><td>${o.time}</td><td>${o.status}</td></tr>`).join('');
+            }
+        });
+}
+
 function setupVerification() {
     const btn = document.getElementById('verifyBtn');
     const input = document.getElementById('orderCodeInput');
@@ -193,7 +246,6 @@ function setupVerification() {
         btn.addEventListener('click', () => {
             const code = input.value.trim();
             if(!code) return alert("Enter code");
-            
             fetch('../api/validate_code.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -205,31 +257,16 @@ function setupVerification() {
                 resBox.textContent = data.message;
                 resBox.style.background = data.success ? '#d1fae5' : '#fee2e2';
                 resBox.style.color = data.success ? '#065f46' : '#991b1b';
-                
                 if(data.success) {
                     input.value = '';
-                    // If verified, it likely moved to Active, so switch view
                     switchTab('active'); 
-                    
-                    // Manually update tab styling if needed
-                    const tabs = document.querySelectorAll('.tab-btn');
-                    if(tabs.length > 0) {
-                        tabs.forEach(t => t.classList.remove('active'));
-                        tabs[0].classList.add('active'); // Assume Active is first
-                    }
                 }
             });
         });
     }
 }
 
-// Logout
 const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-        if (confirm('Logout?')) {
-            sessionStorage.clear();
-            window.location.href = '../Login/login.html';
-        }
-    });
-}
+if (logoutBtn) logoutBtn.addEventListener('click', () => {
+    if (confirm('Logout?')) { sessionStorage.clear(); window.location.href = '../Login/login.html'; }
+});
