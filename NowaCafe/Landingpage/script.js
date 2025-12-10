@@ -4,13 +4,105 @@ let orderInterval;
 
 document.addEventListener('DOMContentLoaded', () => {
     checkLoginStatus();
-    loadCart(); // Auto-clears broken data
-    setupStaticMenuListeners();
+    loadCart(); 
+    loadMenu(); // <--- NEW: Loads dynamic menu
     setupEventListeners();
     updateCartUI();
 });
 
-// --- 1. Event Listeners ---
+// --- 1. Load Dynamic Menu ---
+function loadMenu() {
+    const grid = document.getElementById('menuGrid');
+    if(!grid) return;
+
+    // Show loading state
+    grid.innerHTML = '<p style="text-align:center; width:100%;">Loading menu...</p>';
+
+    fetch('../api/get_products.php')
+        .then(res => res.json())
+        .then(data => {
+            if(data.success && data.products.length > 0) {
+                grid.innerHTML = data.products.map(item => {
+                    const stock = parseInt(item.stock_quantity) || 0;
+                    const isOutOfStock = stock <= 0;
+                    
+                    // Image Path Fix
+                    let filename = item.image_url ? item.image_url.split('/').pop() : '';
+                    if(filename === 'cappuccino.jpg') filename = 'capuccino.jpg'; // Handle typo if needed
+                    const imgPath = filename ? `assets/${filename}` : 'assets/cup.png';
+
+                    // Button Logic
+                    const btnClass = isOutOfStock ? 'add-to-cart btn-disabled' : 'add-to-cart';
+                    const btnText = isOutOfStock ? 'Sold Out' : 'Add to Cart';
+                    const cardClass = isOutOfStock ? 'menu-item unavailable' : 'menu-item';
+                    const clickAction = isOutOfStock ? '' : `onclick="addToCart('${item.product_id}', '${item.name}', '${item.price}', '${imgPath}')"`;
+
+                    return `
+                    <div class="${cardClass}" data-category="${item.category}" data-id="${item.product_id}">
+                        <div class="menu-item-image">
+                            <img src="${imgPath}" onerror="this.src='assets/cup.png'" alt="${item.name}">
+                            <div class="menu-overlay">
+                                <button class="${btnClass}" ${clickAction}>${btnText}</button>
+                            </div>
+                        </div>
+                        <div class="menu-item-info">
+                            <h3>${item.name}</h3>
+                            <p>${item.description || 'Delicious coffee'}</p>
+                            <span class="price">$${parseFloat(item.price).toFixed(2)}</span>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+
+                setupCategoryFiltering();
+            } else {
+                grid.innerHTML = '<p>No items available right now.</p>';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            grid.innerHTML = '<p>Error loading menu.</p>';
+        });
+}
+
+// --- 2. Category Filtering ---
+function setupCategoryFiltering() {
+    const buttons = document.querySelectorAll('.category-btn');
+    const items = document.querySelectorAll('.menu-item');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Active class
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const category = btn.getAttribute('data-category');
+
+            items.forEach(item => {
+                if (category === 'all' || item.getAttribute('data-category') === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+}
+
+// --- 3. Cart Logic ---
+function addToCart(id, name, price, image) {
+    const existing = cart.find(i => i.id === id);
+    if (existing) {
+        existing.quantity++;
+    } else {
+        cart.push({ id: id, name: name, price: parseFloat(price), quantity: 1, image: image });
+    }
+    saveCart();
+    updateCartUI();
+    showNotification("Added to cart!");
+}
+
+// --- 4. Event Listeners & UI ---
 function setupEventListeners() {
     const orderNowBtn = document.getElementById('orderNowBtn');
     if (orderNowBtn) orderNowBtn.addEventListener('click', scrollToMenu);
@@ -55,11 +147,11 @@ function setupEventListeners() {
         document.getElementById('cartOverlay').classList.add('active');
     });
 
-    document.getElementById('closeCart').addEventListener('click', closeActions);
-    document.getElementById('cartOverlay').addEventListener('click', closeActions);
-    document.getElementById('closeOrders').addEventListener('click', closeActions);
-    document.getElementById('closeCheckout').addEventListener('click', closeActions);
-    document.getElementById('closeConfirmation').addEventListener('click', closeActions);
+    // Close buttons
+    ['closeCart', 'cartOverlay', 'closeOrders', 'closeCheckout', 'closeConfirmation'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.addEventListener('click', closeActions);
+    });
 
     document.getElementById('backToOrdersBtn').addEventListener('click', () => {
         document.getElementById('confirmationModal').classList.remove('active');
@@ -67,13 +159,18 @@ function setupEventListeners() {
     });
 
     document.getElementById('checkoutBtn').addEventListener('click', () => {
-        if (sessionStorage.getItem('isLoggedIn') !== 'true') return alert('Please login.');
-        if (cart.length === 0) return alert('Cart empty.');
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') return alert('Please login to checkout.');
+        if (cart.length === 0) return alert('Your cart is empty.');
         
         document.getElementById('checkoutItems').innerHTML = cart.map(i => 
-            `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${i.name} x${i.quantity}</span><span>$${(i.price*i.quantity).toFixed(2)}</span></div>`
+            `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>${i.name} x${i.quantity}</span>
+                <span>$${(i.price*i.quantity).toFixed(2)}</span>
+             </div>`
         ).join('');
-        document.getElementById('checkoutTotal').textContent = `$${cart.reduce((s,i)=>s+(i.price*i.quantity),0).toFixed(2)}`;
+        
+        const total = cart.reduce((s,i)=>s+(i.price*i.quantity),0);
+        document.getElementById('checkoutTotal').textContent = `$${total.toFixed(2)}`;
         
         closeActions();
         document.getElementById('checkoutModal').classList.add('active');
@@ -82,7 +179,7 @@ function setupEventListeners() {
     document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
 }
 
-// --- 2. Global Scroll ---
+// --- 5. Shared Utilities ---
 function scrollToMenu() {
     const section = document.getElementById('menu');
     if(section) section.scrollIntoView({ behavior: 'smooth' });
@@ -94,38 +191,6 @@ function scrollToContact() {
 window.scrollToMenu = scrollToMenu;
 window.scrollToContact = scrollToContact;
 
-// --- 3. Menu Listeners (Grab Image) ---
-function setupStaticMenuListeners() {
-    document.querySelectorAll('.menu-item button').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const card = this.closest('.menu-item');
-            const id = card.getAttribute('data-id');
-            const name = card.getAttribute('data-name');
-            const price = card.getAttribute('data-price');
-            
-            // FIX: Grab image source (defaults to cup.png if missing)
-            const imgEl = card.querySelector('img');
-            const image = imgEl ? imgEl.src : 'assets/cup.png';
-
-            addToCart(id, name, price, image);
-        });
-    });
-}
-
-function addToCart(id, name, price, image) {
-    const existing = cart.find(i => i.id === id);
-    if (existing) {
-        existing.quantity++;
-    } else {
-        // Save the image URL in the cart item
-        cart.push({ id: id, name: name, price: parseFloat(price), quantity: 1, image: image });
-    }
-    saveCart();
-    updateCartUI();
-    showNotification("Added!");
-}
-
-// --- 4. UI Update (With Images) ---
 function updateCartUI() {
     const count = document.getElementById('cartCount');
     const items = document.getElementById('cartItems');
@@ -133,8 +198,9 @@ function updateCartUI() {
     const total = cart.reduce((s,i)=>s+(i.price*i.quantity),0);
     
     if(count) {
-        count.textContent = cart.reduce((s,i)=>s+i.quantity,0);
-        count.style.display = cart.length > 0 ? 'block' : 'none';
+        const qty = cart.reduce((s,i)=>s+i.quantity,0);
+        count.textContent = qty;
+        count.style.display = qty > 0 ? 'block' : 'none';
     }
     
     if(cart.length === 0) {
@@ -173,15 +239,10 @@ window.changeQty = function(id, d) {
     }
 }
 
-// --- 5. FIXED: Auto-Repair Cart ---
 function loadCart() { 
     try { 
         cart = JSON.parse(localStorage.getItem('cart') || '[]'); 
-        
-        // CHECK: If any item is missing an image, the data is old. Clear it.
-        const isBroken = cart.some(item => !item.image);
-        if (cart.length > 0 && isBroken) {
-            console.log("Old cart data detected. Resetting to fix images.");
+        if (cart.some(item => !item.image)) {
             cart = [];
             localStorage.removeItem('cart');
         }
@@ -196,39 +257,31 @@ function checkLoginStatus() {
         document.getElementById('loginBtn').style.display = 'none';
         document.getElementById('userProfile').style.display = 'flex';
         document.getElementById('profileName').textContent = userName;
-        if (userName) { const avatarEl = document.getElementById('profileAvatar'); if(avatarEl) avatarEl.textContent = userName.charAt(0).toUpperCase(); }
+        const avatarEl = document.getElementById('profileAvatar');
+        if(avatarEl && userName) avatarEl.textContent = userName.charAt(0).toUpperCase();
     }
 }
+
 function showNotification(msg) {
     const n = document.createElement('div');
     n.className = 'notification success show';
     n.innerHTML = `✓ ${msg}`;
+    // Inline styling for the notification if not in CSS
+    n.style.position = 'fixed';
+    n.style.top = '20px';
+    n.style.right = '20px';
+    n.style.backgroundColor = '#4caf50';
+    n.style.color = 'white';
+    n.style.padding = '15px 25px';
+    n.style.borderRadius = '8px';
+    n.style.zIndex = '9999';
+    n.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+    
     document.body.appendChild(n);
     setTimeout(() => n.remove(), 2000);
 }
 
-// --- Receipt View (No Timer) ---
-window.viewReceipt = function(index) {
-    const order = myOrdersData[index];
-    const modal = document.getElementById('confirmationModal');
-    const gotItBtn = document.getElementById('closeConfirmation'); 
-    const backBtn = document.getElementById('backToOrdersBtn');
-    const timerDiv = document.getElementById('orderTimer');
-
-    gotItBtn.style.display = 'none'; 
-    backBtn.style.display = 'block'; 
-    if(timerDiv) { timerDiv.style.display = 'none'; if(orderInterval) clearInterval(orderInterval); }
-
-    document.getElementById('orderCode').textContent = order.token;
-    document.getElementById('orderSummary').innerHTML = order.items.map(item => 
-        `<div>${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</div>`
-    ).join('');
-    
-    document.getElementById('ordersModal').classList.remove('active');
-    modal.classList.add('active');
-};
-
-// --- Place Order (With Timer) ---
+// --- Order API Functions ---
 function placeOrder() {
     const email = sessionStorage.getItem('userEmail');
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -237,14 +290,14 @@ function placeOrder() {
     .then(data => {
         if (data.success) {
             const modal = document.getElementById('confirmationModal');
-            const gotItBtn = document.getElementById('closeConfirmation');
-            const backBtn = document.getElementById('backToOrdersBtn');
-            const timerDiv = document.getElementById('orderTimer');
+            document.getElementById('closeConfirmation').style.display = 'block';
+            document.getElementById('backToOrdersBtn').style.display = 'none';
             
-            gotItBtn.style.display = 'block'; backBtn.style.display = 'none';   
             document.getElementById('orderCode').textContent = data.order_token;
-            
-            if(timerDiv) { timerDiv.style.display = 'block'; startCountdown(data.expiry_time); }
+            if(document.getElementById('orderTimer')) { 
+                document.getElementById('orderTimer').style.display = 'block'; 
+                startCountdown(data.expiry_time); 
+            }
 
             document.getElementById('orderSummary').innerHTML = cart.map(item => 
                 `<div>${item.name} x${item.quantity} - $${(item.price*item.quantity).toFixed(2)}</div>`
@@ -257,21 +310,76 @@ function placeOrder() {
     }).catch(() => alert("Connection Error"));
 }
 
+function loadMyOrders() {
+    const email = sessionStorage.getItem('userEmail');
+    if(!email) return;
+    
+    fetch('../api/get_user_orders.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            myOrdersData = data.orders; // Store for receipt view
+            const list = document.getElementById('ordersList');
+            if(data.orders.length === 0) {
+                list.innerHTML = '<p class="no-orders">No orders found.</p>';
+                return;
+            }
+            list.innerHTML = data.orders.map((o, index) => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-code-badge">${o.token}</span>
+                        <span class="order-status ${o.status === 'Completed' ? 'status-completed' : 'status-pending'}">${o.status}</span>
+                    </div>
+                    <div class="order-items">
+                        ${o.items.map(i => `<div class="order-item-row"><span>${i.name} x${i.quantity}</span><span>$${parseFloat(i.subtotal).toFixed(2)}</span></div>`).join('')}
+                    </div>
+                    <div class="order-total"><strong>Total: $${o.total}</strong></div>
+                    <p class="order-date">${o.date}</p>
+                    <button onclick="viewReceipt(${index})" style="width:100%; margin-top:10px; padding:8px; cursor:pointer;">View Code</button>
+                </div>
+            `).join('');
+        }
+    });
+}
+
 function startCountdown(expiryString) {
     const timerDisplay = document.getElementById('orderTimer');
     if (!timerDisplay) return;
     if (orderInterval) clearInterval(orderInterval);
     const expiryDate = new Date(expiryString.replace(' ', 'T'));
+    
     function update() {
         const now = new Date();
         const diff = expiryDate - now;
         if (diff <= 0) {
-            timerDisplay.textContent = "Code Expired!"; timerDisplay.style.color = "red"; clearInterval(orderInterval); return;
+            timerDisplay.textContent = "Code Expired!"; 
+            timerDisplay.style.color = "red"; 
+            clearInterval(orderInterval); 
+            return;
         }
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
         timerDisplay.textContent = `Code Expires in: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         timerDisplay.style.color = "#d9534f";
     }
-    update(); orderInterval = setInterval(update, 1000);
+    update(); 
+    orderInterval = setInterval(update, 1000);
 }
+
+window.viewReceipt = function(index) {
+    const order = myOrdersData[index];
+    const modal = document.getElementById('confirmationModal');
+    
+    document.getElementById('closeConfirmation').style.display = 'none'; 
+    document.getElementById('backToOrdersBtn').style.display = 'block'; 
+    if(document.getElementById('orderTimer')) document.getElementById('orderTimer').style.display = 'none';
+    if(orderInterval) clearInterval(orderInterval);
+
+    document.getElementById('orderCode').textContent = order.token;
+    document.getElementById('orderSummary').innerHTML = order.items.map(item => 
+        `<div>${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</div>`
+    ).join('');
+    
+    document.getElementById('ordersModal').classList.remove('active');
+    modal.classList.add('active');
+};

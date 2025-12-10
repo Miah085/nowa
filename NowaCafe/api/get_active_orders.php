@@ -3,8 +3,10 @@ header('Content-Type: application/json');
 error_reporting(0);
 require 'db_connect.php';
 
+// 1. FIX TIMEZONE (Crucial for correct calculations)
+date_default_timezone_set('Asia/Manila');
+
 try {
-    // 1. Fetch Active Orders (Pending AND Processing)
     $sql = "SELECT t.transaction_id, t.transaction_date, t.total_amount, t.status, t.order_token, u.username 
             FROM transactions t
             JOIN users u ON t.user_id = u.user_id
@@ -19,7 +21,7 @@ try {
     foreach ($orders as $order) {
         $t_id = $order['transaction_id'];
 
-        $sql_items = "SELECT ti.quantity, p.name 
+        $sql_items = "SELECT ti.quantity, p.name, p.product_id, p.price 
                       FROM transaction_items ti 
                       JOIN products p ON ti.product_id = p.product_id 
                       WHERE ti.transaction_id = ?";
@@ -27,7 +29,13 @@ try {
         $stmt_items->execute([$t_id]);
         $items = $stmt_items->fetchAll(PDO::FETCH_ASSOC);
 
-        $timeAgo = round((time() - strtotime($order['transaction_date'])) / 60) . " mins ago";
+        // Convert DB time to Unix Timestamp
+        $timestamp = strtotime($order['transaction_date']);
+        
+        // Calculate standard "Time Ago" for Active Orders
+        $elapsed = time() - $timestamp;
+        $minsAgo = floor($elapsed / 60);
+        $timeString = ($minsAgo < 1) ? "Just now" : "$minsAgo mins ago";
 
         $orderList[] = [
             'id' => $t_id,
@@ -35,12 +43,12 @@ try {
             'customer' => $order['username'],
             'total' => $order['total_amount'],
             'status' => $order['status'],
-            'time' => $timeAgo,
+            'timestamp' => $timestamp, // Send raw time for JS countdown
+            'time_ago' => $timeString, // Send pre-calc string for Active
             'items' => $items
         ];
     }
 
-    // 2. Calculate Stats
     $pending = $conn->query("SELECT COUNT(*) FROM transactions WHERE status = 'Pending'")->fetchColumn();
     $processing = $conn->query("SELECT COUNT(*) FROM transactions WHERE status = 'Processing'")->fetchColumn();
     $completed = $conn->query("SELECT COUNT(*) FROM transactions WHERE status = 'Completed' AND DATE(transaction_date) = CURDATE()")->fetchColumn();

@@ -99,5 +99,35 @@
     </div>
 
     <script src="employee-script.js"></script>
+
+    <div id="editOrderModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Order #<span id="editOrderId"></span></h2>
+            
+            <div class="edit-items-container">
+                <table class="schedule-table" id="editItemsTable">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editItemsBody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: space-between; align-items: center;">
+                <button class="btn-reject" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-complete" onclick="saveOrderChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="employee-script.js"></script>
+</body>
+</html>
 </body>
 </html>

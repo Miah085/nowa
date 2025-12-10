@@ -5,7 +5,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const userRole = sessionStorage.getItem('userRole');
     const userName = sessionStorage.getItem('userName');
-    const userEmail = sessionStorage.getItem('userEmail'); // Needed for schedule
+    const userEmail = sessionStorage.getItem('userEmail'); 
 
     if (!isLoggedIn || (userRole !== 'staff' && userRole !== 'employee')) {
         alert('Access denied. Staff privileges required.');
@@ -21,12 +21,17 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 3. Load All Data ---
-    loadData();              // Load Orders
-    loadMenu();              // Load Menu items (NEW)
-    loadSchedule(userEmail); // Load Schedule (NEW)
+    loadData();              
+    loadMenu();              
+    loadSchedule(userEmail); 
+    renderProfile(userName, userEmail, userRole);
 
-    // Live sync for orders only
+    // --- FIX: SEPARATE DATA SYNC FROM TIMER ---
+    // 1. Check for new orders every 5 seconds (Prevents card flicker)
     setInterval(loadData, 5000); 
+    
+    // 2. Update the countdown numbers every 1 second (Smooth timer)
+    setInterval(updateTimers, 1000);
 
     setupVerification();
     setupNavigation();
@@ -34,23 +39,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // --- NAVIGATION & TABS ---
 function setupNavigation() {
-    // Sidebar Navigation
     document.querySelectorAll('.nav-item').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // UI Active State
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             link.classList.add('active');
-
-            // Show Section
             const sectionId = link.getAttribute('data-section');
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
         });
     });
 
-    // Mobile Menu
     const toggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
     if(toggle && sidebar) {
@@ -58,7 +57,6 @@ function setupNavigation() {
     }
 }
 
-// --- ORDER TABS ---
 window.switchTab = function(tabName) {
     currentTab = tabName;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -77,9 +75,7 @@ window.switchTab = function(tabName) {
     if (tabName !== 'archive') loadData(); 
 };
 
-// --- DATA LOADING FUNCTIONS ---
-
-// 1. ORDERS
+// --- DATA LOADING ---
 function loadData() {
     fetch('../api/get_active_orders.php')
         .then(res => res.json())
@@ -92,20 +88,35 @@ function loadData() {
                 }
                 const pendingOrders = data.orders.filter(o => o.status === 'Pending');
                 const activeOrders = data.orders.filter(o => o.status === 'Processing');
+                
+                // Only re-render if the count changes to avoid glitching 
+                // (Optional optimization, but calling renderGrid is fine with 5s interval)
                 renderGrid('activeGrid', activeOrders, 'active');
                 renderGrid('pendingGrid', pendingOrders, 'pending');
+                
+                // Immediately update timers after render so they don't wait 1 second
+                updateTimers();
             }
         });
 }
 
+// --- NEW RENDER GRID (Prepares for Live Timer) ---
 function renderGrid(elementId, orders, type) {
     const grid = document.getElementById(elementId);
     if (!grid) return;
+    
+    // Simple check to avoid clearing selection/hover if data hasn't changed dramatically
+    // For now, we overwrite to ensure new orders appear. 
+    // The 5s interval makes this acceptable.
+    
     if (orders.length === 0) {
         grid.innerHTML = `<p class="loading-text">No ${type} orders.</p>`;
         return;
     }
-    grid.innerHTML = orders.map(order => `
+
+    grid.innerHTML = orders.map(order => {
+        // We set initial text here, but the 'js-timer' class allows the interval to take over
+        return `
         <div class="order-card ${type === 'active' ? 'processing' : 'pending'}">
             <div class="order-header">
                 <span class="order-id">#${order.id}</span>
@@ -113,7 +124,14 @@ function renderGrid(elementId, orders, type) {
             </div>
             <div class="order-details">
                 <p class="customer-name">${order.customer}</p>
-                <p class="order-time">⏳ ${order.time}</p>
+                
+                <p class="order-time js-timer" 
+                   data-ts="${order.timestamp}" 
+                   data-type="${type}"
+                   style="font-weight:bold; color:#6b5442;">
+                   Loading...
+                </p>
+
                 <p style="font-size:1.1rem; color:#6b5442; font-weight:bold; margin-top:5px; background:#f5f1ed; padding:8px; text-align:center; border-radius:6px; letter-spacing:1px;">${order.token}</p>
             </div>
             <div class="order-items" style="max-height:100px; overflow-y:auto;">
@@ -124,20 +142,68 @@ function renderGrid(elementId, orders, type) {
                 ${getButtons(order, type)}
             </div>
         </div>
-    `).join('');
+    `}).join('');
+}
+
+// --- NEW INDEPENDENT TIMER FUNCTION ---
+function updateTimers() {
+    const timers = document.querySelectorAll('.js-timer');
+    const now = Math.floor(Date.now() / 1000); // Current Unix Timestamp in seconds
+
+    timers.forEach(timer => {
+        const timestamp = parseInt(timer.getAttribute('data-ts'));
+        const type = timer.getAttribute('data-type');
+
+        if (type === 'pending') {
+            // 20 Minute Countdown
+            const expiryTime = timestamp + (20 * 60); // 20 mins in seconds
+            const diff = expiryTime - now;
+
+            if (diff > 0) {
+                const mins = Math.floor(diff / 60);
+                const secs = diff % 60;
+                timer.textContent = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs} left`;
+                timer.style.color = "#d9534f"; // Reddish urgency
+            } else {
+                timer.textContent = "⚠️ Expired";
+                timer.style.color = "red";
+            }
+        } else {
+            // Standard "Time Ago" for Active Orders
+            const elapsed = now - timestamp;
+            const minsAgo = Math.floor(elapsed / 60);
+            
+            if(minsAgo < 1) timer.textContent = "🕒 Just now";
+            else if(minsAgo < 60) timer.textContent = `🕒 ${minsAgo} mins ago`;
+            else {
+                const hrs = Math.floor(minsAgo/60);
+                timer.textContent = `🕒 ${hrs} hrs ago`;
+            }
+            timer.style.color = "#6b5442";
+        }
+    });
 }
 
 function getButtons(order, type) {
     if (type === 'pending') {
-        return `<button class="btn-accept" style="flex:2;" onclick="updateStatus(${order.id}, 'Processing')">Accept</button>
-                <button class="btn-reject" style="flex:1;" onclick="updateStatus(${order.id}, 'Voided')">Void</button>`;
+        return `
+            <div style="display:flex; flex-direction:column; gap:5px; width:100%;">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-accept" style="flex:1;" onclick="updateStatus(${order.id}, 'Processing')">Accept</button>
+                    <button class="btn-reject" style="flex:1;" onclick="updateStatus(${order.id}, 'Voided')">Void</button>
+                </div>
+                <button class="btn-edit-order" onclick='openEditModal(${JSON.stringify(order)})'>✎ Edit Order</button>
+            </div>
+        `;
     } else {
-        return `<button class="btn-complete" style="flex:2;" onclick="updateStatus(${order.id}, 'Completed')">Done</button>
-                <button class="btn-reject" style="flex:1;" onclick="updateStatus(${order.id}, 'Voided')">Cancel</button>`;
+        return `
+            <button class="btn-complete" style="flex: 2;" onclick="updateStatus(${order.id}, 'Completed')">Done</button>
+            <button class="btn-reject" style="flex: 1;" onclick="updateStatus(${order.id}, 'Voided')">Cancel</button>
+        `;
     }
 }
 
-// 2. MENU (NEW FUNCTION)
+// 2. MENU
 function loadMenu() {
     const container = document.querySelector('.menu-grid');
     if(!container) return;
@@ -147,48 +213,45 @@ function loadMenu() {
         .then(data => {
             if(data.success && data.products.length > 0) {
                 container.innerHTML = data.products.map(item => {
-                    // Logic to set image path
-                    let imgPath = item.image_url ? `../Landingpage/assets/${item.image_url}` : '../Landingpage/assets/cup.png';
-                    // Determine stock status
-                    let stockClass = item.stock_quantity > 10 ? 'available' : 'low';
-                    let stockText = item.stock_quantity > 10 ? 'In Stock' : 'Low Stock';
-                    
+                    let filename = item.image_url ? item.image_url.split('/').pop() : '';
+                    if(filename === 'cappuccino.jpg') filename = 'capuccino.jpg';
+                    const imgPath = filename ? `../Landingpage/assets/${filename}` : '../Login/assets/cup.png'; 
+                    const fallbackImg = '../Login/assets/cup.png';
+
+                    const stock = parseInt(item.stock_quantity) || 0; 
+                    let stockClass = stock > 10 ? 'available' : (stock === 0 ? 'out' : 'low');
+                    let stockText = stock > 10 ? 'In Stock' : (stock === 0 ? 'Out of Stock' : 'Low Stock');
+
                     return `
-                    <div class="menu-card">
-                        <img src="${imgPath}" onerror="this.src='../Landingpage/assets/cup.png'" alt="${item.name}">
-                        <div class="menu-info">
+                    <div class="menu-item">
+                        <div class="menu-item-image">
+                            <img src="${imgPath}" onerror="this.onerror=null; this.src='${fallbackImg}';" alt="${item.name}">
+                            <div class="menu-overlay"><span class="stock-badge ${stockClass}">${stockText}</span></div>
+                        </div>
+                        <div class="menu-item-info">
                             <h3>${item.name}</h3>
-                            <p>$${parseFloat(item.price).toFixed(2)}</p>
-                            <span class="stock-status ${stockClass}">
-                                ${stockText} (${item.stock_quantity})
-                            </span>
+                            <p class="description">Stock: ${stock} units</p>
+                            <span class="price">$${parseFloat(item.price).toFixed(2)}</span>
                         </div>
                     </div>
                 `}).join('');
             } else {
-                container.innerHTML = '<p>No menu items found or database connection failed.</p>';
+                container.innerHTML = '<p>No menu items found.</p>';
             }
         });
 }
 
-// 3. SCHEDULE (NEW FUNCTION)
+// 3. SCHEDULE
 function loadSchedule(email) {
     const container = document.querySelector('.schedule-container');
     if(!container) return;
+    if(!email) { container.innerHTML = '<p style="text-align:center;">No email found. Relogin.</p>'; return; }
 
-    fetch('../api/get_schedule.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email })
-    })
+    fetch('../api/get_schedule.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) })
     .then(res => res.json())
     .then(data => {
-        let html = `
-            <table class="schedule-table">
-                <thead><tr><th>Day</th><th>Shift</th><th>Hours</th></tr></thead>
-                <tbody>`;
-        
-        if (data.success && data.schedule && data.schedule.length > 0) {
+        let html = `<table class="schedule-table"><thead><tr><th>Day</th><th>Shift</th><th>Hours</th></tr></thead><tbody>`;
+        if (data.success && data.schedule.length > 0) {
             html += data.schedule.map(shift => {
                 const start = formatTime(shift.start_time);
                 const end = formatTime(shift.end_time);
@@ -196,13 +259,36 @@ function loadSchedule(email) {
                 return `<tr><td>${shift.day_of_week}</td><td>${type}</td><td>${start} - ${end}</td></tr>`;
             }).join('');
         } else {
-            html += `<tr><td colspan="3" style="text-align:center;">No schedule assigned yet.</td></tr>`;
+            html += `<tr><td colspan="3" style="text-align:center;">No schedule found.</td></tr>`;
         }
-        
         html += `</tbody></table>`;
         container.innerHTML = html;
     });
 }
+
+// 4. PROFILE
+function renderProfile(name, email, role) {
+    const container = document.querySelector('.profile-container');
+    if(!container) return;
+    container.innerHTML = `
+        <form class="profile-form" onsubmit="handlePasswordUpdate(event)">
+            <div class="form-group"><label>Full Name</label><input type="text" value="${name}" readonly style="background:#f0f0f0;"></div>
+            <div class="form-group"><label>Email</label><input type="email" value="${email}" id="profileEmail" readonly style="background:#f0f0f0;"></div>
+            <div class="form-group"><label>Position</label><input type="text" value="${role.toUpperCase()}" readonly style="background:#f0f0f0;"></div>
+            <div class="form-group"><label>Change Password</label><input type="password" id="newPassword" placeholder="Enter new password" required></div>
+            <button type="submit" class="btn-primary">Update Password</button>
+        </form>
+    `;
+}
+
+window.handlePasswordUpdate = function(e) {
+    e.preventDefault();
+    const email = document.getElementById('profileEmail').value;
+    const pass = document.getElementById('newPassword').value;
+    fetch('../api/update_profile.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, new_password: pass }) })
+    .then(res => res.json())
+    .then(data => { alert(data.message); if(data.success) document.getElementById('newPassword').value = ''; });
+};
 
 // --- UTILS ---
 function formatTime(timeString) {
@@ -216,57 +302,97 @@ function formatTime(timeString) {
 
 window.updateStatus = function(orderId, newStatus) {
     if (newStatus === 'Voided' && !confirm(`Confirm Void Order #${orderId}?`)) return;
-    fetch('../api/update_order_status.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: orderId, status: newStatus })
-    }).then(res => res.json()).then(data => {
-        if(data.success) loadData();
-        else alert(data.message);
-    });
+    fetch('../api/update_order_status.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_id: orderId, status: newStatus }) })
+    .then(res => res.json()).then(data => { if(data.success) loadData(); else alert(data.message); });
 };
 
 function loadArchiveOrders() {
-    fetch('../api/get_archived_orders.php')
-        .then(res => res.json())
-        .then(data => {
-            const tbody = document.getElementById('archiveTableBody');
-            if(tbody && data.success) {
-                tbody.innerHTML = data.orders.map(o => `<tr><td>#${o.id}</td><td>${o.customer}</td><td>$${o.total}</td><td>${o.time}</td><td>${o.status}</td></tr>`).join('');
-            }
-        });
+    fetch('../api/get_archived_orders.php').then(res => res.json()).then(data => {
+        const tbody = document.getElementById('archiveTableBody');
+        if(tbody && data.success) {
+            tbody.innerHTML = data.orders.map(o => `<tr><td>#${o.id}</td><td>${o.customer}</td><td>$${o.total}</td><td>${o.time}</td><td>${o.status}</td></tr>`).join('');
+        }
+    });
 }
 
 function setupVerification() {
     const btn = document.getElementById('verifyBtn');
     const input = document.getElementById('orderCodeInput');
     const resBox = document.getElementById('verificationResult');
-
     if(btn) {
         btn.addEventListener('click', () => {
             const code = input.value.trim();
             if(!code) return alert("Enter code");
-            fetch('../api/validate_code.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code })
-            })
+            fetch('../api/validate_code.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code }) })
             .then(res => res.json())
             .then(data => {
-                resBox.style.display = 'block';
-                resBox.textContent = data.message;
+                resBox.style.display = 'block'; resBox.textContent = data.message;
                 resBox.style.background = data.success ? '#d1fae5' : '#fee2e2';
                 resBox.style.color = data.success ? '#065f46' : '#991b1b';
-                if(data.success) {
-                    input.value = '';
-                    switchTab('active'); 
-                }
+                if(data.success) { input.value = ''; switchTab('active'); }
             });
         });
     }
 }
 
 const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) logoutBtn.addEventListener('click', () => {
-    if (confirm('Logout?')) { sessionStorage.clear(); window.location.href = '../Login/login.html'; }
-});
+if (logoutBtn) logoutBtn.addEventListener('click', () => { if (confirm('Logout?')) { sessionStorage.clear(); window.location.href = '../Login/login.html'; } });
+
+// --- EDIT ORDER MODAL LOGIC ---
+let currentEditOrder = null;
+let currentEditItems = [];
+
+window.openEditModal = function(order) {
+    currentEditOrder = order;
+    currentEditItems = JSON.parse(JSON.stringify(order.items)); // Deep copy
+    document.getElementById('editOrderId').textContent = order.id;
+    renderEditTable();
+    document.getElementById('editOrderModal').style.display = 'flex';
+}
+
+window.closeEditModal = function() {
+    document.getElementById('editOrderModal').style.display = 'none';
+}
+
+function renderEditTable() {
+    const tbody = document.getElementById('editItemsBody');
+    if(currentEditItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="color:red; text-align:center;">Order empty. Saving will void items.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = currentEditItems.map((item, index) => `
+        <tr>
+            <td style="text-align:left; font-weight:bold;">${item.name}</td>
+            <td>
+                <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <button class="qty-btn-mini" onclick="updateEditQty(${index}, -1)">-</button>
+                    <span style="font-weight:bold; width:20px;">${item.quantity}</span>
+                    <button class="qty-btn-mini" onclick="updateEditQty(${index}, 1)">+</button>
+                </div>
+            </td>
+            <td><button class="btn-remove-mini" onclick="removeEditItem(${index})">✕</button></td>
+        </tr>
+    `).join('');
+}
+
+window.updateEditQty = function(index, change) {
+    const newQty = parseInt(currentEditItems[index].quantity) + change;
+    if (newQty > 0) {
+        currentEditItems[index].quantity = newQty;
+        renderEditTable();
+    }
+}
+
+window.removeEditItem = function(index) {
+    currentEditItems.splice(index, 1);
+    renderEditTable();
+}
+
+window.saveOrderChanges = function() {
+    if(!currentEditOrder) return;
+    const itemsToSend = currentEditItems.map(item => ({ product_id: item.product_id, quantity: item.quantity }));
+    fetch('../api/edit_order.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_id: currentEditOrder.id, items: itemsToSend }) })
+    .then(res => res.json())
+    .then(data => { if(data.success) { closeEditModal(); loadData(); alert("Updated!"); } else alert(data.message); })
+    .catch(err => alert("Error saving"));
+}

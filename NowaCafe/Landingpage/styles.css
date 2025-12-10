@@ -1285,6 +1285,35 @@ body {
     box-shadow: 0 10px 25px rgba(107, 84, 66, 0.3);
 }
 
+/* --- OUT OF STOCK STYLES --- */
+.menu-item.unavailable {
+    opacity: 0.7;
+    filter: grayscale(0.5);
+    pointer-events: none; /* Optional: prevents clicking the whole card */
+}
+
+.menu-item.unavailable .menu-item-image::after {
+    content: "SOLD OUT";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    z-index: 10;
+}
+
+.btn-disabled {
+    background-color: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed !important;
+    pointer-events: all; /* Allow hovering to see the disabled cursor */
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .hamburger {
