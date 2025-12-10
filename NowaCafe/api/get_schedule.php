@@ -8,8 +8,7 @@ if (isset($data['email'])) {
     $email = $data['email'];
 
     try {
-        // 1. Get User ID
-        $stmt = $conn->prepare("SELECT user_id, full_name FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT user_id, username FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -26,11 +25,12 @@ if (isset($data['email'])) {
 
         echo json_encode([
             "success" => true, 
-            "debug_user_id" => $user['user_id'], // CHECK THIS IN CONSOLE
+            "debug_user_id" => $user['user_id'], 
             "schedule" => $shifts
         ]);
 
     } catch (PDOException $e) {
+        // This is where it was failing before!
         echo json_encode(["success" => false, "message" => "DB Error: " . $e->getMessage()]);
     }
 } else {
