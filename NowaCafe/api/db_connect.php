@@ -1,19 +1,16 @@
 <?php
-// File: C:\xampp\htdocs\nowa\db_connection.php
-
 $host = "localhost";
-$port = "4306";      // Keep this as 4306 since we found that worked before
+$port = "3306";      
 $username = "root";
-$password = ""; // <--- TYPE YOUR NEW XAMPP PASSWORD HERE
+$password = "";      
 $dbname = "nowacafe_db";
 
 try {
-    $conn = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $username, $password);
+    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
+    $conn = new PDO($dsn, $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    // echo "Connected successfully"; 
 } catch(PDOException $e) {
     header('Content-Type: application/json');
-    echo json_encode(["success" => false, "message" => "Database Connection Failed: " . $e->getMessage()]);
-    exit;
+    die(json_encode(["success" => false, "message" => "Connection Error: " . $e->getMessage()]));
 }
 ?>

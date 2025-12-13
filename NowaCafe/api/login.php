@@ -9,12 +9,11 @@ if (isset($data['email']) && isset($data['password'])) {
     $email = $data['email'];
     $password = $data['password'];
 
-    // Check database
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Verify Password (using password_hash column)
+    // Verify hashed password
     if ($user && password_verify($password, $user['password_hash'])) {
         echo json_encode([
             "success" => true,
