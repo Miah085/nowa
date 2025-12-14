@@ -610,6 +610,14 @@ body {
     max-width: 600px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border-color);
+    margin: 0 auto;
+}
+
+.modal-actions-center {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .profile-form {

@@ -11,7 +11,7 @@
         <div class="logo">Café Nowa</div>
         <nav class="nav-menu">
             <a href="#" class="nav-item active" data-section="orders"><span class="icon">□</span> Orders</a>
-            <a href="#" class="nav-item" data-section="menu"><span class="icon">☕</span> Menu</a>
+            <a href="#" class="nav-item" data-section="menu"> <span class="icon">▣</span> Menu</a>
             <a href="#" class="nav-item" data-section="schedule"><span class="icon">▦</span> Schedule</a>
             <a href="#" class="nav-item" data-section="profile"><span class="icon">●</span> Profile</a>
         </nav>
@@ -95,7 +95,7 @@
 
         <section id="menu" class="content-section"><h2>Menu Items</h2><div class="menu-grid"></div></section>
         <section id="schedule" class="content-section"><h2>My Work Schedule</h2><div class="schedule-container"></div></section>
-        <section id="profile" class="content-section"><h2>My Profile</h2><div class="profile-container"></div></section>
+        <section id="profile" class="content-section"><div class="profile-container"></div></section>
     </div>
 
     <script src="employee-script.js"></script>
@@ -125,6 +125,31 @@
             </div>
         </div>
     </div>
+
+    <div id="logoutModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeLogoutModal()">&times;</span>
+            <h2 style="margin-bottom: 10px;">Confirm Logout</h2>
+            <p style="color: #6b7280; margin-bottom: 25px;">Are you sure you want to log out?</p>
+    
+            <div class="modal-actions-center">
+                <button class="btn-reject" onclick="closeLogoutModal()"
+                    style="background-color: #f3f4f6; color: #374151; border-color: #d1d5db;">Cancel</button>
+                <button class="btn-primary" onclick="confirmLogout()" style="background-color: #ef4444;">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeAlertModal()">&times;</span>
+            <h2 id="alertTitle" style="margin-bottom: 10px;">Notice</h2>
+            <p id="alertMessage" style="color: #6b7280; margin-bottom: 25px;"></p>
+            <div class="modal-actions-center">
+                <button class="btn-primary" onclick="closeAlertModal()">OK</button>
+            </div>
+        </div>
+        </div>
 
     <script src="employee-script.js"></script>
 </body>
