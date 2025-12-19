@@ -8,7 +8,7 @@ if (isset($data['inventory_id']) && isset($data['action']) && isset($data['quant
     try {
         $conn->beginTransaction();
 
-        // Get current stock - handle both column names
+        // 1. Get current stock
         $stmt = $conn->prepare("SELECT COALESCE(current_stock, quantity, 0) as stock, item_name FROM inventory WHERE inventory_id = ?");
         $stmt->execute([$data['inventory_id']]);
         $item = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -18,11 +18,11 @@ if (isset($data['inventory_id']) && isset($data['action']) && isset($data['quant
             exit;
         }
 
-        $current_stock = $item['stock'];
+        $current_stock = floatval($item['stock']);
         $quantity = floatval($data['quantity']);
         $new_stock = $current_stock;
 
-        // Calculate new stock based on action
+        // 2. Calculate new stock based on action
         switch ($data['action']) {
             case 'in':
                 $new_stock = $current_stock + $quantity;
@@ -32,17 +32,40 @@ if (isset($data['inventory_id']) && isset($data['action']) && isset($data['quant
                 break;
             case 'adjust':
                 $new_stock = $quantity;
+                // For log adjustment, calculate difference
                 $quantity = $quantity - $current_stock;
                 break;
         }
 
-        // Update inventory - update both columns to be safe
+        // 3. Update inventory table
         $update_sql = "UPDATE inventory SET quantity = ?, current_stock = ? WHERE inventory_id = ?";
         $update_stmt = $conn->prepare($update_sql);
         $update_stmt->execute([$new_stock, $new_stock, $data['inventory_id']]);
 
-        // Log movement
-        $user_id = $data['user_id'] ?? 1;
+        // ---------------------------------------------------------
+        // DYNAMIC USER ID FETCHING (Fix for Foreign Key Error)
+        // ---------------------------------------------------------
+        
+        // Step A: Check if a specific user_id was passed from frontend
+        $user_id = $data['user_id'] ?? null;
+
+        // Step B: If no ID provided, automatically find a valid ADMIN
+        if (!$user_id) {
+            // Select the first active user with role 'admin'
+            $admin_query = "SELECT user_id FROM users WHERE role = 'admin' AND status = 'active' LIMIT 1";
+            $admin_stmt = $conn->prepare($admin_query);
+            $admin_stmt->execute();
+            $admin_row = $admin_stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($admin_row) {
+                $user_id = $admin_row['user_id'];
+            } else {
+                // If no admin is found at all, stop the transaction to prevent error
+                throw new Exception("System Error: No active admin user found to verify this stock update.");
+            }
+        }
+
+        // 4. Log movement
         $movement_sql = "INSERT INTO stock_movements (inventory_id, action_type, quantity, notes, performed_by) 
                         VALUES (?, ?, ?, ?, ?)";
         $movement_stmt = $conn->prepare($movement_sql);
@@ -51,7 +74,7 @@ if (isset($data['inventory_id']) && isset($data['action']) && isset($data['quant
             $data['action'],
             abs($quantity),
             $data['notes'] ?? '',
-            $user_id
+            $user_id // Uses the dynamic ID found above
         ]);
 
         $conn->commit();
@@ -62,7 +85,14 @@ if (isset($data['inventory_id']) && isset($data['action']) && isset($data['quant
         ]);
 
     } catch (PDOException $e) {
-        $conn->rollBack();
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
+        echo json_encode(["success" => false, "message" => "Database Error: " . $e->getMessage()]);
+    } catch (Exception $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         echo json_encode(["success" => false, "message" => $e->getMessage()]);
     }
 } else {

@@ -3,6 +3,7 @@ header('Content-Type: application/json');
 require '../db_connect.php';
 
 try {
+    // Added WHERE clause to filter out deleted items
     $inventory = $conn->query("
         SELECT 
             inventory_id,
@@ -20,6 +21,7 @@ try {
                 ELSE 'good'
             END as status
         FROM inventory
+        WHERE is_deleted = 0  
         ORDER BY item_name ASC
     ")->fetchAll(PDO::FETCH_ASSOC);
 

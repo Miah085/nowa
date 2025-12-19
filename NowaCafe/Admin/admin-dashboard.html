@@ -21,8 +21,15 @@
             <a href="#" class="nav-item" data-section="products">
                 <span class="icon">▣</span> Products
             </a>
-            <a href="#" class="nav-item" data-section="orders">
-                <span class="icon">□</span> Orders
+            <a href="#" class="nav-item" data-section="orders" style="display: flex; align-items: center;">
+                <span class="icon" style="display: flex; align-items: center; justify-content: center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    </svg>
+                </span>
+                Orders
             </a>
             <a href="#" class="nav-item" data-section="employees">
                 <span class="icon">◉</span> Employees
@@ -62,9 +69,9 @@
         <section id="overview" class="content-section active">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">$</div>
+                    <div class="stat-icon">₱</div>
                     <div class="stat-info">
-                        <h3>$0.00</h3>
+                        <h3>₱0.00</h3>
                         <p>Total Revenue Today</p>
                     </div>
                 </div>
@@ -156,8 +163,15 @@
                     <tbody id="inventoryTableBody"></tbody>
                 </table>
             </div>
+
             <div class="stock-history">
-                <h3>Recent Stock Movements</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                    <h3 style="margin: 0;">Recent Stock Movements</h3>
+                    <button id="downloadStockBtn" class="btn-secondary"
+                        style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                        📥 Download Report
+                    </button>
+                </div>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -184,11 +198,11 @@
         <section id="orders" class="content-section">
             <h2>Order Management</h2>
             <div class="filters">
-                <select class="filter-select">
-                    <option>All Orders</option>
-                    <option>Pending</option>
-                    <option>Processing</option>
-                    <option>Completed</option>
+                <select class="filter-select" id="orderStatusFilter">
+                    <option value="All Orders">All Orders</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Completed">Completed</option>
                 </select>
             </div>
             <table class="data-table">
@@ -203,7 +217,7 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="ordersTableBody"></tbody>
             </table>
         </section>
 
@@ -247,13 +261,11 @@
             <div class="analytics-grid">
                 <div class="analytics-card">
                     <h3>Weekly Revenue</h3>
-                    <p class="analytics-value">$0.00</p>
-                    <span class="analytics-trend positive">Current Week</span>
+                    <p class="analytics-value">₱0.00</p> <span class="analytics-trend positive">Current Week</span>
                 </div>
                 <div class="analytics-card">
                     <h3>Monthly Revenue</h3>
-                    <p class="analytics-value">$0.00</p>
-                    <span class="analytics-trend positive">Current Month</span>
+                    <p class="analytics-value">₱0.00</p> <span class="analytics-trend positive">Current Month</span>
                 </div>
                 <div class="analytics-card">
                     <h3>Best Selling Item</h3>
@@ -400,18 +412,21 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Price ($) *</label>
-                        <input type="number" step="0.01" id="prodPrice" required>
+                        <label>Price (₱) *</label> <input type="number" step="0.01" id="prodPrice" required>
                     </div>
                     <div class="form-group">
                         <label>Initial Stock *</label>
                         <input type="number" id="prodStock" required>
                     </div>
                 </div>
+
                 <div class="form-group">
-                    <label>Image Path (e.g., assets/espresso.jpg)</label>
-                    <input type="text" id="prodImage" placeholder="assets/default.jpg">
+                    <label>Product Image</label>
+                    <input type="file" id="prodImage" accept="image/*">
+                    <small style="color: #666; font-size: 0.8em;">Accepted: .jpg, .png, .jpeg (Leave empty to keep
+                        existing)</small>
                 </div>
+
                 <div class="form-group">
                     <label>Description</label>
                     <textarea rows="3" id="prodDesc"></textarea>
@@ -489,8 +504,7 @@
                 <tbody id="viewOrderItems"></tbody>
             </table>
             <div style="text-align: right; font-size: 1.2rem; font-weight: bold;">
-                Total: $<span id="viewOrderTotal">0.00</span>
-            </div>
+                Total: ₱<span id="viewOrderTotal">0.00</span> </div>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
             </div>
@@ -520,7 +534,7 @@
                 </div>
                 <div class="stat-card" style="padding: 1rem;">
                     <div class="stat-info">
-                        <h3 id="viewCustSpent">$0.00</h3>
+                        <h3 id="viewCustSpent">₱0.00</h3>
                         <p>Total Spent</p>
                     </div>
                 </div>
@@ -541,6 +555,118 @@
                 <button type="button" class="btn-primary" id="confirmLogoutBtn"
                     style="background-color: var(--danger); border-color: var(--danger);">Logout</button>
             </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Confirm Deletion</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">
+                Are you sure you want to delete this item? <br>
+                <span style="font-size: 0.9em; color: #ef4444;">This action cannot be undone.</span>
+            </p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="confirmDelete()"
+                    style="background-color: var(--danger); border-color: var(--danger);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteProductModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Confirm Deletion</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">
+                Are you sure you want to delete this product? <br>
+                <span style="font-size: 0.9em; color: #ef4444;">This action cannot be undone.</span>
+            </p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="confirmDeleteProduct()"
+                    style="background-color: var(--danger); border-color: var(--danger);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteEmployeeModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Confirm Removal</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">
+                Are you sure you want to remove this employee? <br>
+                <span style="font-size: 0.9em; color: #ef4444;">They will be marked as inactive.</span>
+            </p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="confirmDeleteEmployee()"
+                    style="background-color: var(--danger); border-color: var(--danger);">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteScheduleModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Confirm Removal</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">
+                Are you sure you want to remove this shift? <br>
+                <span style="font-size: 0.9em; color: #ef4444;">This action cannot be undone.</span>
+            </p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="confirmDeleteSchedule()"
+                    style="background-color: var(--danger); border-color: var(--danger);">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="scheduleModalTitle">Manage Schedule</h2>
+
+            <form id="addScheduleForm"
+                style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <input type="hidden" id="scheduleUserId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.85em;">Day</label>
+                        <select id="schedDay" required style="padding: 8px; width: 100%;">
+                            <option>Monday</option>
+                            <option>Tuesday</option>
+                            <option>Wednesday</option>
+                            <option>Thursday</option>
+                            <option>Friday</option>
+                            <option>Saturday</option>
+                            <option>Sunday</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.85em;">Start Time</label>
+                        <input type="time" id="schedStart" required style="padding: 8px; width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.85em;">End Time</label>
+                        <input type="time" id="schedEnd" required style="padding: 8px; width: 100%;">
+                    </div>
+                    <button type="submit" class="btn-primary" style="padding: 8px 15px;">+ Add</button>
+                </div>
+            </form>
+
+            <h3>Current Shifts</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+                </tbody>
+            </table>
         </div>
     </div>
 

@@ -3,8 +3,8 @@
 require 'db_connect.php';
 
 // --- EDIT THESE 4 LINES ---
-$new_username = "Wrenier";
-$new_email    = "staff1@nowacafe.com";
+$new_username = "French Michael Leyran";
+$new_email    = "staff2@nowacafe.com";
 $new_password = "staff123"; 
 $new_role     = "staff"; // Options: 'admin', 'staff', 'customer'
 

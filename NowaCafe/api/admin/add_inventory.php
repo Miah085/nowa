@@ -8,7 +8,9 @@ if (isset($data['item_name']) && isset($data['category']) && isset($data['curren
     isset($data['unit']) && isset($data['min_quantity'])) {
     
     try {
-        // Check if columns exist, use appropriate column names
+        $conn->beginTransaction(); // Start transaction for safety
+
+        // 1. Insert into Inventory
         $sql = "INSERT INTO inventory (item_name, category, quantity, current_stock, unit, reorder_level, min_quantity, unit_cost, supplier) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
@@ -19,27 +21,68 @@ if (isset($data['item_name']) && isset($data['category']) && isset($data['curren
         $stmt->execute([
             $data['item_name'],
             $data['category'],
-            $stock,  // for quantity column
-            $stock,  // for current_stock column
+            $stock,
+            $stock,
             $data['unit'],
-            $min,    // for reorder_level column
-            $min,    // for min_quantity column
+            $min,
+            $min,
             $data['unit_cost'] ?? null,
             $data['supplier'] ?? null
         ]);
 
-        // Log the stock movement
         $inventory_id = $conn->lastInsertId();
-        $user_id = $data['user_id'] ?? 1;
 
+        // ---------------------------------------------------------
+        // DYNAMIC USER ID FETCHING
+        // ---------------------------------------------------------
+        
+        // Step 1: Check if a specific user_id was passed
+        $user_id = $data['user_id'] ?? null;
+
+        // Step 2: If no ID provided, find any valid Admin in the database
+        if (!$user_id) {
+            // Get the first active admin found in the database
+            $admin_query = "SELECT user_id FROM users WHERE role = 'admin' AND status = 'active' LIMIT 1";
+            $admin_stmt = $conn->prepare($admin_query);
+            $admin_stmt->execute();
+            $admin_row = $admin_stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($admin_row) {
+                $user_id = $admin_row['user_id'];
+            } else {
+                // Failsafe: If no admin exists, try getting ANY active user or throw error
+                // This prevents the foreign key error even if no admin is found
+                $any_user_query = "SELECT user_id FROM users WHERE status = 'active' LIMIT 1";
+                $any_user_stmt = $conn->prepare($any_user_query);
+                $any_user_stmt->execute();
+                $any_user_row = $any_user_stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($any_user_row) {
+                     $user_id = $any_user_row['user_id'];
+                } else {
+                     throw new Exception("No active users found to perform this action.");
+                }
+            }
+        }
+
+        // 3. Log the stock movement using the dynamic $user_id
         $movement_sql = "INSERT INTO stock_movements (inventory_id, action_type, quantity, notes, performed_by) 
                         VALUES (?, 'in', ?, 'Initial stock', ?)";
         $movement_stmt = $conn->prepare($movement_sql);
         $movement_stmt->execute([$inventory_id, $data['current_stock'], $user_id]);
 
+        $conn->commit(); // Save changes
         echo json_encode(["success" => true, "message" => "Inventory item added successfully"]);
 
     } catch (PDOException $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack(); // Undo changes on error
+        }
+        echo json_encode(["success" => false, "message" => $e->getMessage()]);
+    } catch (Exception $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         echo json_encode(["success" => false, "message" => $e->getMessage()]);
     }
 } else {

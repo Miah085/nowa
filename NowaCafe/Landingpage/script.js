@@ -13,42 +13,64 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- 1. Load Dynamic Menu ---
 function loadMenu() {
     const grid = document.getElementById('menuGrid');
-    if(!grid) return;
+    if (!grid) return;
 
     // Show loading state
-    grid.innerHTML = '<p style="text-align:center; width:100%;">Loading menu...</p>';
+    grid.innerHTML = '<p style="text-align:center; width:100%; grid-column:1/-1;">Loading our delicious menu...</p>';
 
-    fetch('../api/get_products.php')
+    // Fetch from the new API endpoint
+    fetch('../api/get_menu.php')
         .then(res => res.json())
         .then(data => {
-            if(data.success && data.products.length > 0) {
+            if (data.success && data.products.length > 0) {
                 grid.innerHTML = data.products.map(item => {
+                    // 1. Stock & Availability Logic
                     const stock = parseInt(item.stock_quantity) || 0;
-                    const isOutOfStock = stock <= 0;
-                    
-                    // Image Path Fix
-                    let filename = item.image_url ? item.image_url.split('/').pop() : '';
-                    if(filename === 'cappuccino.jpg') filename = 'capuccino.jpg'; // Handle typo if needed
-                    const imgPath = filename ? `assets/${filename}` : 'assets/cup.png';
+                    const isActive = parseInt(item.is_active) === 1;
 
-                    // Button Logic
-                    const btnClass = isOutOfStock ? 'add-to-cart btn-disabled' : 'add-to-cart';
-                    const btnText = isOutOfStock ? 'Sold Out' : 'Add to Cart';
-                    const cardClass = isOutOfStock ? 'menu-item unavailable' : 'menu-item';
-                    const clickAction = isOutOfStock ? '' : `onclick="addToCart('${item.product_id}', '${item.name}', '${item.price}', '${imgPath}')"`;
+                    // Item is unavailable if stock is 0 OR admin set it to inactive
+                    const isUnavailable = stock <= 0 || !isActive;
+
+                    // 2. Image Path Logic
+                    // DB stores: "assets/products/image.jpg"
+                    // Landing page is in a subfolder, so we need "../"
+                    let dbPath = item.image_url;
+                    let displayImg;
+
+                    if (dbPath && !dbPath.startsWith('http')) {
+                        displayImg = `../${dbPath}`;
+                    } else {
+                        displayImg = dbPath || 'assets/cup.png';
+                    }
+
+                    // 3. UI States
+                    const cardClass = isUnavailable ? 'menu-item unavailable' : 'menu-item';
+                    const btnClass = isUnavailable ? 'add-to-cart btn-disabled' : 'add-to-cart';
+                    const btnText = isUnavailable ? 'Sold Out' : 'Add to Cart';
+
+                    // Only allow click if available
+                    // We escape the name and image to prevent JS errors with quotes
+                    const safeName = item.name.replace(/'/g, "\\'");
+                    const clickAction = isUnavailable ? '' : `onclick="addToCart('${item.product_id}', '${safeName}', '${item.price}', '${displayImg}')"`;
 
                     return `
-                    <div class="${cardClass}" data-category="${item.category}" data-id="${item.product_id}">
+                    <div class="${cardClass}" data-category="${item.category}">
                         <div class="menu-item-image">
-                            <img src="${imgPath}" onerror="this.src='assets/cup.png'" alt="${item.name}">
+                            <img src="${displayImg}" onerror="this.src='assets/cup.png'" alt="${item.name}">
+                            ${isUnavailable ? '<div class="sold-out-overlay">SOLD OUT</div>' : ''}
+                            
+                            ${!isUnavailable ? `
                             <div class="menu-overlay">
                                 <button class="${btnClass}" ${clickAction}>${btnText}</button>
-                            </div>
+                            </div>` : ''}
                         </div>
                         <div class="menu-item-info">
-                            <h3>${item.name}</h3>
-                            <p>${item.description || 'Delicious coffee'}</p>
-                            <span class="price">$${parseFloat(item.price).toFixed(2)}</span>
+                            <div style="display:flex; justify-content:space-between; align-items:start;">
+                                <h3>${item.name}</h3>
+                                <span class="price">₱${parseFloat(item.price).toFixed(2)}</span>
+                            </div>
+                            <p>${item.description || 'Freshly brewed perfection.'}</p>
+                            ${isUnavailable ? '<small style="color:red; font-weight:bold;">Currently Unavailable</small>' : `<small style="color:green;">${stock} in stock</small>`}
                         </div>
                     </div>
                     `;
@@ -56,12 +78,12 @@ function loadMenu() {
 
                 setupCategoryFiltering();
             } else {
-                grid.innerHTML = '<p>No items available right now.</p>';
+                grid.innerHTML = '<p style="text-align:center; width:100%;">No items found in the menu.</p>';
             }
         })
         .catch(err => {
             console.error(err);
-            grid.innerHTML = '<p>Error loading menu.</p>';
+            grid.innerHTML = '<p style="text-align:center; color:red;">Failed to load menu. Please try again later.</p>';
         });
 }
 
