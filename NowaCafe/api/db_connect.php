@@ -1,16 +1,15 @@
 <?php
-$host = "localhost";
-$port = "3306";      
-$username = "root";
-$password = "";      
-$dbname = "nowacafe_db";
+// api/db_connect.php
+$host = 'localhost';
+$dbname = 'nowacafe_db';
+$username = 'root';      // Default XAMPP/WAMP username
+$password = '';          // Default XAMPP/WAMP password (usually empty)
 
 try {
-    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
-    $conn = new PDO($dsn, $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    header('Content-Type: application/json');
-    die(json_encode(["success" => false, "message" => "Connection Error: " . $e->getMessage()]));
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die(json_encode(['success' => false, 'message' => 'Database connection failed: ' . $e->getMessage()]));
 }
 ?>

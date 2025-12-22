@@ -3,10 +3,10 @@
 require 'db_connect.php';
 
 // --- EDIT THESE 4 LINES ---
-$new_username = "Andrea";
-$new_email    = "admin1@nowacafe.com";
-$new_password = "admin123"; 
-$new_role     = "admin"; // Options: 'admin', 'staff', 'customer'
+$new_username = "French Michael Leyran";
+$new_email    = "staff2@nowacafe.com";
+$new_password = "staff123"; 
+$new_role     = "staff"; // Options: 'admin', 'staff', 'customer'
 
 // 1. Check if email exists
 $check = $conn->prepare("SELECT email FROM users WHERE email = ?");

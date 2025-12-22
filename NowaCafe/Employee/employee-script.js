@@ -1,41 +1,43 @@
 let currentTab = 'active';
 
 window.addEventListener('DOMContentLoaded', () => {
-    // --- 1. Security Check ---
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const userRole = sessionStorage.getItem('userRole');
     const userName = sessionStorage.getItem('userName');
-    const userEmail = sessionStorage.getItem('userEmail'); 
+    const userEmail = sessionStorage.getItem('userEmail');
 
     if (!isLoggedIn || (userRole !== 'staff' && userRole !== 'employee')) {
         alert('Access denied. Staff privileges required.');
-        window.location.href = '../Login/login.html'; 
+        window.location.href = '../Login/login.html';
         return;
     }
-    
-    // --- 2. Initialize UI ---
-    if(userName) {
-        if(document.getElementById('userName')) document.getElementById('userName').textContent = userName;
+
+    if (userName) {
+        if (document.getElementById('userName')) document.getElementById('userName').textContent = userName;
         const avatarEl = document.getElementById('userAvatar');
-        if(avatarEl) avatarEl.textContent = userName.charAt(0).toUpperCase();
+        if (avatarEl) avatarEl.textContent = userName.charAt(0).toUpperCase();
     }
 
-    // --- 3. Load All Data ---
-    loadData();              
-    loadMenu();              
-    loadSchedule(userEmail); 
+    // Load Data
+    loadData();
+    loadMenu();
+    loadSchedule(userEmail); // Pass email to function
     renderProfile(userName, userEmail, userRole);
 
-    // --- 4. Timers ---
-    setInterval(loadData, 5000); // Data sync (5s)
-    setInterval(updateTimers, 1000); // UI Timer (1s)
+    // Timers
+    setInterval(loadData, 5000);
+    setInterval(updateTimers, 1000);
 
     setupVerification();
     setupNavigation();
+    setupLogout();
 });
 
-// --- NAVIGATION & TABS ---
+// --- NAVIGATION ---
 function setupNavigation() {
+    const pageTitle = document.getElementById('pageTitle');
+    const titles = { 'orders': 'Order Management', 'menu': 'Menu', 'schedule': 'Schedule', 'profile': 'Profile' };
+
     document.querySelectorAll('.nav-item').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -44,20 +46,119 @@ function setupNavigation() {
             const sectionId = link.getAttribute('data-section');
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
+            if (pageTitle && titles[sectionId]) pageTitle.textContent = titles[sectionId];
         });
     });
 
     const toggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
-    if(toggle && sidebar) {
+    if (toggle && sidebar) {
         toggle.addEventListener('click', () => sidebar.classList.toggle('active'));
     }
 }
 
-window.switchTab = function(tabName) {
+// --- FIXED SCHEDULE FUNCTION ---
+function loadSchedule(email) {
+    const tbody = document.getElementById('scheduleTableBody');
+    if (!tbody) return;
+
+    if (!email) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Email not found in session.</td></tr>';
+        return;
+    }
+
+    // Send email via POST
+    fetch('../api/get_schedule.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (data.schedule && data.schedule.length > 0) {
+                    tbody.innerHTML = data.schedule.map(shift => {
+                        const start = formatTime(shift.start_time);
+                        const end = formatTime(shift.end_time);
+
+                        return `
+                        <tr>
+                            <td style="font-weight:bold;">${shift.day_of_week}</td>
+                            <td>${start}</td>
+                            <td>${end}</td>
+                            <td style="text-align:center;">
+                                <span style="background:#d1fae5; color:#065f46; padding:4px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">Scheduled</span>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#888;">No shifts assigned yet.</td></tr>';
+                }
+            } else {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">${data.message}</td></tr>`;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Connection Error. Check console.</td></tr>';
+        });
+}
+
+function formatTime(timeString) {
+    if (!timeString) return "-";
+    const [hours, minutes] = timeString.split(':');
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${h12}:${minutes} ${ampm}`;
+}
+
+// --- MODALS, ORDERS, PROFILE ---
+window.showCustomAlert = function (title, message) {
+    const modal = document.getElementById('alertModal');
+    const titleEl = document.getElementById('alertTitle');
+    const msgEl = document.getElementById('alertMessage');
+    if (modal && titleEl && msgEl) {
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        modal.classList.add('active');
+    } else { alert(`${title}: ${message}`); }
+}
+
+window.closeAlertModal = function () {
+    const modal = document.getElementById('alertModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function setupLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    const logoutModal = document.getElementById('logoutModal');
+    if (logoutBtn && logoutModal) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            logoutModal.classList.add('active');
+        });
+    }
+}
+
+window.closeLogoutModal = function () {
+    const modal = document.getElementById('logoutModal');
+    if (modal) modal.classList.remove('active');
+}
+
+window.confirmLogout = function () {
+    sessionStorage.clear();
+    window.location.href = '../Login/login.html';
+}
+
+window.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal')) e.target.classList.remove('active');
+});
+
+window.switchTab = function (tabName) {
     currentTab = tabName;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if(event && event.target) event.target.classList.add('active'); 
+    if (event && event.target) event.target.classList.add('active');
 
     document.getElementById('viewActive').style.display = 'none';
     document.getElementById('viewPending').style.display = 'none';
@@ -69,23 +170,22 @@ window.switchTab = function(tabName) {
         document.getElementById('viewArchive').style.display = 'block';
         loadArchiveOrders();
     }
-    if (tabName !== 'archive') loadData(); 
+    if (tabName !== 'archive') loadData();
 };
 
-// --- DATA LOADING ---
 function loadData() {
+    if (currentTab === 'archive') return;
     fetch('../api/get_active_orders.php')
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                if(data.stats) {
-                    if(document.getElementById('statPending')) document.getElementById('statPending').textContent = data.stats.pending;
-                    if(document.getElementById('statProgress')) document.getElementById('statProgress').textContent = data.stats.processing;
-                    if(document.getElementById('statCompleted')) document.getElementById('statCompleted').textContent = data.stats.completed;
+                if (data.stats) {
+                    if (document.getElementById('statPending')) document.getElementById('statPending').textContent = data.stats.pending;
+                    if (document.getElementById('statProgress')) document.getElementById('statProgress').textContent = data.stats.processing;
+                    if (document.getElementById('statCompleted')) document.getElementById('statCompleted').textContent = data.stats.completed;
                 }
                 const pendingOrders = data.orders.filter(o => o.status === 'Pending');
                 const activeOrders = data.orders.filter(o => o.status === 'Processing');
-                
                 renderGrid('activeGrid', activeOrders, 'active');
                 renderGrid('pendingGrid', pendingOrders, 'pending');
                 updateTimers();
@@ -96,12 +196,10 @@ function loadData() {
 function renderGrid(elementId, orders, type) {
     const grid = document.getElementById(elementId);
     if (!grid) return;
-    
     if (orders.length === 0) {
         grid.innerHTML = `<p class="loading-text">No ${type} orders.</p>`;
         return;
     }
-
     grid.innerHTML = orders.map(order => `
         <div class="order-card ${type === 'active' ? 'processing' : 'pending'}">
             <div class="order-header">
@@ -116,7 +214,7 @@ function renderGrid(elementId, orders, type) {
             <div class="order-items" style="max-height:100px; overflow-y:auto;">
                 ${order.items.map(item => `<p>• ${item.quantity}x ${item.name}</p>`).join('')}
             </div>
-            <div class="order-total">Total: $${order.total}</div>
+            <div class="order-total">Total: ₱${parseFloat(order.total).toFixed(2)}</div>
             <div class="order-actions" style="display:flex; gap:10px;">
                 ${getButtons(order, type)}
             </div>
@@ -126,20 +224,18 @@ function renderGrid(elementId, orders, type) {
 
 function updateTimers() {
     const timers = document.querySelectorAll('.js-timer');
-    const now = Math.floor(Date.now() / 1000); 
-
+    const now = Math.floor(Date.now() / 1000);
     timers.forEach(timer => {
         const timestamp = parseInt(timer.getAttribute('data-ts'));
         const type = timer.getAttribute('data-type');
-
         if (type === 'pending') {
-            const expiryTime = timestamp + (20 * 60); 
+            const expiryTime = timestamp + (20 * 60);
             const diff = expiryTime - now;
             if (diff > 0) {
                 const mins = Math.floor(diff / 60);
                 const secs = diff % 60;
                 timer.textContent = `⏳ ${mins}:${secs < 10 ? '0' : ''}${secs} left`;
-                timer.style.color = "#d9534f"; 
+                timer.style.color = "#d9534f";
             } else {
                 timer.textContent = "⚠️ Expired";
                 timer.style.color = "red";
@@ -147,9 +243,9 @@ function updateTimers() {
         } else {
             const elapsed = now - timestamp;
             const minsAgo = Math.floor(elapsed / 60);
-            if(minsAgo < 1) timer.textContent = "🕒 Just now";
-            else if(minsAgo < 60) timer.textContent = `🕒 ${minsAgo} mins ago`;
-            else timer.textContent = `🕒 ${Math.floor(minsAgo/60)} hrs ago`;
+            if (minsAgo < 1) timer.textContent = "🕒 Just now";
+            else if (minsAgo < 60) timer.textContent = `🕒 ${minsAgo} mins ago`;
+            else timer.textContent = `🕒 ${Math.floor(minsAgo / 60)} hrs ago`;
             timer.style.color = "#6b5442";
         }
     });
@@ -174,129 +270,152 @@ function getButtons(order, type) {
     }
 }
 
-// 2. MENU
 function loadMenu() {
     const container = document.querySelector('.menu-grid');
-    if(!container) return;
+    if (!container) return;
 
-    fetch('../api/get_products.php')
+    container.innerHTML = '<p class="loading-text">Loading menu...</p>';
+
+    fetch('../api/admin/get_products.php')
         .then(res => res.json())
         .then(data => {
-            if(data.success && data.products.length > 0) {
+            if (data.success && data.products) {
+                if (data.products.length === 0) {
+                    container.innerHTML = '<p class="loading-text">No items found.</p>';
+                    return;
+                }
+
                 container.innerHTML = data.products.map(item => {
-                    let filename = item.image_url ? item.image_url.split('/').pop() : '';
-                    if(filename === 'cappuccino.jpg') filename = 'capuccino.jpg';
-                    
-                    const imgPath = filename 
-                        ? `../Landingpage/assets/${filename}` 
-                        : '../Login/assets/cup.png'; 
+                    // --- IMAGE PATH FIX ---
+                    // 1. Get path from DB (e.g., "assets/products/my_image.jpg")
+                    let dbPath = item.image_url;
+                    let displayPath;
+
+                    // 2. Default Fallback
                     const fallbackImg = '../Login/assets/cup.png';
 
-                    const stock = parseInt(item.stock_quantity) || 0; 
-                    let stockClass = stock > 10 ? 'available' : (stock === 0 ? 'out' : 'low');
-                    let stockText = stock > 10 ? 'In Stock' : (stock === 0 ? 'Out of Stock' : 'Low Stock');
+                    // 3. Construct the correct path relative to the Employee folder
+                    if (!dbPath) {
+                        displayPath = fallbackImg;
+                    } else if (dbPath.startsWith('http')) {
+                        displayPath = dbPath; // It's an online link
+                    } else {
+                        // The DB says "assets/...", so we just add "../" to step out of the "Employee" folder
+                        // Result: "../assets/products/my_image.jpg"
+                        displayPath = `../${dbPath}`;
+                    }
+                    // ----------------------
+
+                    // Availability Logic
+                    const isActive = item.is_active == 1;
+                    const statusClass = isActive ? '' : 'unavailable-item';
+                    const btnText = isActive ? 'Mark Out of Stock' : 'Set as Available';
+                    const btnClass = isActive ? 'btn-mark-out' : 'btn-mark-in';
+                    const newStatus = isActive ? 0 : 1;
 
                     return `
-                    <div class="menu-item">
-                        <div class="menu-item-image">
-                            <img src="${imgPath}" onerror="this.onerror=null; this.src='${fallbackImg}';" alt="${item.name}">
-                            <div class="menu-overlay"><span class="stock-badge ${stockClass}">${stockText}</span></div>
+                    <div class="menu-card ${statusClass}">
+                        <div class="menu-img-container">
+                            <img src="${displayPath}" onerror="this.onerror=null; this.src='${fallbackImg}';" alt="${item.name}">
+                            ${!isActive ? '<div class="overlay-unavailable">UNAVAILABLE</div>' : ''}
                         </div>
-                        <div class="menu-item-info">
-                            <h3>${item.name}</h3>
-                            <p class="description">Stock: ${stock} units</p>
-                            <span class="price">$${parseFloat(item.price).toFixed(2)}</span>
+                        <div class="menu-info">
+                            <div class="menu-header">
+                                <h3>${item.name}</h3>
+                                <span class="price">₱${parseFloat(item.price).toFixed(2)}</span>
+                            </div>
+                            <p class="category">${item.category}</p>
+                            <p class="stock-info">Stock: <strong>${item.stock_quantity}</strong></p>
+                            
+                            <div class="menu-actions">
+                                <button class="${btnClass}" onclick="toggleProductAvailability(${item.product_id}, ${newStatus})">
+                                    ${btnText}
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `}).join('');
+                    </div>`;
+                }).join('');
             } else {
-                container.innerHTML = '<p>No menu items found.</p>';
+                container.innerHTML = `<p class="loading-text" style="color:red">Error: ${data.message}</p>`;
             }
+        })
+        .catch(err => {
+            console.error(err);
+            container.innerHTML = '<p class="loading-text" style="color:red">Connection Failed. Check console.</p>';
         });
 }
 
-// 3. SCHEDULE
-function loadSchedule(email) {
-    // FIX: Specifically target the container inside the #schedule section
-    const container = document.querySelector('#schedule .schedule-container');
-    
-    if(!container) return;
-    if(!email) { 
-        container.innerHTML = '<p style="text-align:center;">No email found. Relogin.</p>'; 
-        return; 
-    }
-
-    fetch('../api/get_schedule.php', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ email: email }) 
+// --- UPDATED TOGGLE FUNCTION (Pointing to api/admin) ---
+window.toggleProductAvailability = function (id, newStatus) {
+    // UPDATED PATH: ../api/admin/update_product_status.php
+    fetch('../api/admin/update_product_status.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: id, is_active: newStatus })
     })
-    .then(res => res.json())
-    .then(data => {
-        // Debugging: Check console to see if ID is found
-        console.log("Schedule Data:", data);
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadMenu(); // Refresh menu
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => alert("Connection failed."));
+};
 
-        let html = `
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th>Day</th>
-                        <th>Shift</th>
-                        <th>Hours</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-        
-        if (data.success && data.schedule && data.schedule.length > 0) {
-            html += data.schedule.map(shift => {
-                const start = formatTime(shift.start_time);
-                const end = formatTime(shift.end_time);
-                const type = parseInt(shift.start_time) < 12 ? "Morning" : "Afternoon";
-                return `<tr><td>${shift.day_of_week}</td><td>${type}</td><td>${start} - ${end}</td></tr>`;
-            }).join('');
-        } else {
-            html += `<tr><td colspan="3" style="text-align:center;">No schedule found for this user.</td></tr>`;
-        }
-        
-        html += `</tbody></table>`;
-        container.innerHTML = html;
-    });
-}
+// --- NEW FUNCTION: TOGGLE AVAILABILITY ---
+window.toggleProductAvailability = function (id, newStatus) {
+    // Optimistic UI update (optional, but good for UX)
+    // For now, we'll just reload the menu after success
 
-// --- FIX 2: ARCHIVE (Added Colors) ---
+    fetch('../api/admin/update_product_status.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: id, is_active: newStatus })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadMenu(); // Reload the grid to show changes
+            } else {
+                alert("Error updating status: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error("Error:", err);
+            alert("Connection failed.");
+        });
+};
+
 function loadArchiveOrders() {
     fetch('../api/get_archived_orders.php').then(res => res.json()).then(data => {
         const tbody = document.getElementById('archiveTableBody');
-        if(tbody && data.success) {
+        if (tbody && data.success) {
             if (data.orders.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">No archived orders found.</td></tr>';
                 return;
             }
             tbody.innerHTML = data.orders.map(o => {
-                // Color Logic
                 let statusClass = 'low';
                 if (o.status === 'Completed') statusClass = 'available';
                 else if (o.status === 'Voided') statusClass = 'voided';
-
                 return `
                 <tr>
                     <td style="font-weight:bold;">#${o.id}</td>
                     <td>${o.customer}</td>
-                    <td style="font-weight:bold;">$${o.total}</td>
+                    <td style="font-weight:bold;">₱${o.total}</td>
                     <td>${o.time}</td>
-                    <td style="text-align:center;">
-                        <span class="stock-status ${statusClass}">${o.status}</span>
-                    </td>
+                    <td style="text-align:center;"><span class="stock-status ${statusClass}">${o.status}</span></td>
                 </tr>`;
             }).join('');
         }
     });
 }
 
-// 4. PROFILE
 function renderProfile(name, email, role) {
     const container = document.querySelector('.profile-container');
-    if(!container) return;
+    if (!container) return;
     container.innerHTML = `
         <form class="profile-form" onsubmit="handlePasswordUpdate(event)">
             <div class="form-group"><label>Full Name</label><input type="text" value="${name}" readonly style="background:#f0f0f0;"></div>
@@ -308,73 +427,71 @@ function renderProfile(name, email, role) {
     `;
 }
 
-window.handlePasswordUpdate = function(e) {
+window.handlePasswordUpdate = function (e) {
     e.preventDefault();
     const email = document.getElementById('profileEmail').value;
     const pass = document.getElementById('newPassword').value;
+    if (!pass) { showCustomAlert("Error", "Password cannot be empty."); return; }
     fetch('../api/update_profile.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, new_password: pass }) })
-    .then(res => res.json())
-    .then(data => { alert(data.message); if(data.success) document.getElementById('newPassword').value = ''; });
+        .then(res => res.json())
+        .then(data => {
+            showCustomAlert(data.success ? "Success" : "Error", data.message);
+            if (data.success) document.getElementById('newPassword').value = '';
+        });
 };
 
-// --- UTILS ---
-function formatTime(timeString) {
-    if(!timeString) return "-";
-    const [hours, minutes] = timeString.split(':');
-    const h = parseInt(hours);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12 = h % 12 || 12;
-    return `${h12}:${minutes} ${ampm}`;
-}
-
-window.updateStatus = function(orderId, newStatus) {
+window.updateStatus = function (orderId, newStatus) {
     if (newStatus === 'Voided' && !confirm(`Confirm Void Order #${orderId}?`)) return;
     fetch('../api/update_order_status.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_id: orderId, status: newStatus }) })
-    .then(res => res.json()).then(data => { if(data.success) { loadData(); loadMenu(); } else alert(data.message); });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) { loadData(); loadMenu(); }
+            else { showCustomAlert("Error", data.message); }
+        });
 };
 
 function setupVerification() {
     const btn = document.getElementById('verifyBtn');
     const input = document.getElementById('orderCodeInput');
     const resBox = document.getElementById('verificationResult');
-    if(btn) {
+    if (btn) {
         btn.addEventListener('click', () => {
             const code = input.value.trim();
-            if(!code) return alert("Enter code");
+            if (!code) { showCustomAlert("Input Required", "Please enter a valid order code."); return; }
             fetch('../api/validate_code.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code }) })
-            .then(res => res.json())
-            .then(data => {
-                resBox.style.display = 'block'; resBox.textContent = data.message;
-                resBox.style.background = data.success ? '#d1fae5' : '#fee2e2';
-                resBox.style.color = data.success ? '#065f46' : '#991b1b';
-                if(data.success) { input.value = ''; switchTab('active'); }
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) { showCustomAlert("Verification Failed", data.message); if (resBox) resBox.style.display = 'none'; }
+                    else {
+                        if (resBox) { resBox.style.display = 'block'; resBox.textContent = data.message; resBox.style.background = '#d1fae5'; resBox.style.color = '#065f46'; }
+                        input.value = '';
+                        setTimeout(() => switchTab('active'), 1000);
+                        loadData();
+                    }
+                })
+                .catch(err => { showCustomAlert("Error", "Server connection failed."); });
         });
     }
 }
 
-const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) logoutBtn.addEventListener('click', () => { if (confirm('Logout?')) { sessionStorage.clear(); window.location.href = '../Login/login.html'; } });
-
-// --- EDIT ORDER MODAL LOGIC ---
 let currentEditOrder = null;
 let currentEditItems = [];
 
-window.openEditModal = function(order) {
+window.openEditModal = function (order) {
     currentEditOrder = order;
-    currentEditItems = JSON.parse(JSON.stringify(order.items)); 
+    currentEditItems = JSON.parse(JSON.stringify(order.items));
     document.getElementById('editOrderId').textContent = order.id;
     renderEditTable();
-    document.getElementById('editOrderModal').style.display = 'flex';
+    document.getElementById('editOrderModal').classList.add('active');
 }
 
-window.closeEditModal = function() {
-    document.getElementById('editOrderModal').style.display = 'none';
+window.closeEditModal = function () {
+    document.getElementById('editOrderModal').classList.remove('active');
 }
 
 function renderEditTable() {
     const tbody = document.getElementById('editItemsBody');
-    if(currentEditItems.length === 0) {
+    if (currentEditItems.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" style="color:red; text-align:center;">Order empty. Saving will void items.</td></tr>';
         return;
     }
@@ -393,7 +510,7 @@ function renderEditTable() {
     `).join('');
 }
 
-window.updateEditQty = function(index, change) {
+window.updateEditQty = function (index, change) {
     const newQty = parseInt(currentEditItems[index].quantity) + change;
     if (newQty > 0) {
         currentEditItems[index].quantity = newQty;
@@ -401,16 +518,24 @@ window.updateEditQty = function(index, change) {
     }
 }
 
-window.removeEditItem = function(index) {
+window.removeEditItem = function (index) {
     currentEditItems.splice(index, 1);
     renderEditTable();
 }
 
-window.saveOrderChanges = function() {
-    if(!currentEditOrder) return;
+window.saveOrderChanges = function () {
+    if (!currentEditOrder) return;
     const itemsToSend = currentEditItems.map(item => ({ product_id: item.product_id, quantity: item.quantity }));
     fetch('../api/edit_order.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_id: currentEditOrder.id, items: itemsToSend }) })
-    .then(res => res.json())
-    .then(data => { if(data.success) { closeEditModal(); loadData(); alert("Updated!"); } else alert(data.message); })
-    .catch(err => alert("Error saving"));
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                closeEditModal();
+                loadData();
+                showCustomAlert("Success", "Order updated successfully!");
+            } else {
+                showCustomAlert("Update Failed", data.message);
+            }
+        })
+        .catch(err => showCustomAlert("Error", "Failed to save changes."));
 }

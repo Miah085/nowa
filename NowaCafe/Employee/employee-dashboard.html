@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Dashboard - Café Nowa</title>
     <link rel="stylesheet" href="employee-styles.css">
 </head>
+
 <body>
     <div class="sidebar">
         <div class="logo">Café Nowa</div>
         <nav class="nav-menu">
             <a href="#" class="nav-item active" data-section="orders"><span class="icon">□</span> Orders</a>
-            <a href="#" class="nav-item" data-section="menu"><span class="icon">☕</span> Menu</a>
+            <a href="#" class="nav-item" data-section="menu"> <span class="icon">▣</span> Menu</a>
             <a href="#" class="nav-item" data-section="schedule"><span class="icon">▦</span> Schedule</a>
             <a href="#" class="nav-item" data-section="profile"><span class="icon">●</span> Profile</a>
         </nav>
@@ -38,23 +40,35 @@
         </header>
 
         <section id="orders" class="content-section active">
-            
             <div class="stats-row">
-                <div class="stat-box"><h3>Active (Processing)</h3><p class="stat-number" id="statProgress">0</p></div>
-                <div class="stat-box"><h3>Pending Queue</h3><p class="stat-number" id="statPending">0</p></div>
-                <div class="stat-box"><h3>Completed Today</h3><p class="stat-number" id="statCompleted">0</p></div>
+                <div class="stat-box">
+                    <h3>Active (Processing)</h3>
+                    <p class="stat-number" id="statProgress">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Pending Queue</h3>
+                    <p class="stat-number" id="statPending">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Completed Today</h3>
+                    <p class="stat-number" id="statCompleted">0</p>
+                </div>
             </div>
 
-            <div class="verification-panel" style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #6b5442; display: flex; flex-direction: column; gap: 10px;">
+            <div class="verification-panel"
+                style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #6b5442; display: flex; flex-direction: column; gap: 10px;">
                 <h3 style="margin: 0; color: #6b5442;">Verify & Start Order</h3>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="orderCodeInput" placeholder="Enter Code (e.g. A7X92B)" style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">
+                    <input type="text" id="orderCodeInput" placeholder="Enter Code (e.g. A7X92B)"
+                        style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">
                     <button class="btn-primary" id="verifyBtn" style="padding: 0 25px; font-size: 1rem;">Verify</button>
                 </div>
-                <div id="verificationResult" style="display:none; padding: 10px; border-radius: 6px; font-weight: bold;"></div>
+                <div id="verificationResult"
+                    style="display:none; padding: 10px; border-radius: 6px; font-weight: bold;"></div>
             </div>
 
-            <div class="tabs-container" style="margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+            <div class="tabs-container"
+                style="margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
                 <button class="tab-btn active" onclick="switchTab('active')">Active Orders (Processing)</button>
                 <button class="tab-btn" onclick="switchTab('pending')">Pending Orders</button>
                 <button class="tab-btn" onclick="switchTab('archive')">Archived Orders</button>
@@ -84,27 +98,53 @@
                 <div class="schedule-container">
                     <table class="schedule-table" id="archiveTable">
                         <thead>
-                            <tr><th>ID</th><th>Customer</th><th>Total</th><th>Date</th><th>Status</th></tr>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
                         </thead>
                         <tbody id="archiveTableBody"></tbody>
                     </table>
                 </div>
             </div>
-
         </section>
 
-        <section id="menu" class="content-section"><h2>Menu Items</h2><div class="menu-grid"></div></section>
-        <section id="schedule" class="content-section"><h2>My Work Schedule</h2><div class="schedule-container"></div></section>
-        <section id="profile" class="content-section"><h2>My Profile</h2><div class="profile-container"></div></section>
-    </div>
+        <section id="menu" class="content-section">
+            <h2>Menu Items</h2>
+            <div class="menu-grid"></div>
+        </section>
 
-    <script src="employee-script.js"></script>
+        <section id="schedule" class="content-section">
+            <h2>My Weekly Schedule</h2>
+            <div class="schedule-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Day</th>
+                            <th style="width: 25%;">Start Time</th>
+                            <th style="width: 25%;">End Time</th>
+                            <th style="width: 30%; text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="profile" class="content-section">
+            <div class="profile-container"></div>
+        </section>
+    </div>
 
     <div id="editOrderModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEditModal()">&times;</span>
             <h2>Edit Order #<span id="editOrderId"></span></h2>
-            
+
             <div class="edit-items-container">
                 <table class="schedule-table" id="editItemsTable">
                     <thead>
@@ -114,18 +154,43 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="editItemsBody">
-                        </tbody>
+                    <tbody id="editItemsBody"></tbody>
                 </table>
             </div>
 
-            <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: space-between; align-items: center;">
+            <div
+                style="margin-top: 20px; display: flex; gap: 15px; justify-content: space-between; align-items: center;">
                 <button class="btn-reject" onclick="closeEditModal()">Cancel</button>
                 <button class="btn-complete" onclick="saveOrderChanges()">Save Changes</button>
             </div>
         </div>
     </div>
 
+    <div id="logoutModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeLogoutModal()">&times;</span>
+            <h2 style="margin-bottom: 10px;">Confirm Logout</h2>
+            <p style="color: #6b7280; margin-bottom: 25px;">Are you sure you want to log out?</p>
+            <div class="modal-actions-center">
+                <button class="btn-reject" onclick="closeLogoutModal()"
+                    style="background-color: #f3f4f6; color: #374151; border-color: #d1d5db;">Cancel</button>
+                <button class="btn-primary" onclick="confirmLogout()" style="background-color: #ef4444;">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeAlertModal()">&times;</span>
+            <h2 id="alertTitle" style="margin-bottom: 10px;">Notice</h2>
+            <p id="alertMessage" style="color: #6b7280; margin-bottom: 25px;"></p>
+            <div class="modal-actions-center">
+                <button class="btn-primary" onclick="closeAlertModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script src="employee-script.js"></script>
 </body>
+
 </html>

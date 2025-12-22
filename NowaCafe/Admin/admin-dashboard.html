@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Café Nowa</title>
     <link rel="stylesheet" href="admin-styles.css">
 </head>
+
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo">Café Nowa Admin</div>
         <nav class="nav-menu">
@@ -18,10 +19,17 @@
                 <span class="icon">◫</span> Inventory
             </a>
             <a href="#" class="nav-item" data-section="products">
-                <span class="icon">☕</span> Products
+                <span class="icon">▣</span> Products
             </a>
-            <a href="#" class="nav-item" data-section="orders">
-                <span class="icon">□</span> Orders
+            <a href="#" class="nav-item" data-section="orders" style="display: flex; align-items: center;">
+                <span class="icon" style="display: flex; align-items: center; justify-content: center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    </svg>
+                </span>
+                Orders
             </a>
             <a href="#" class="nav-item" data-section="employees">
                 <span class="icon">◉</span> Employees
@@ -41,9 +49,7 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
         <header class="header">
             <div class="header-left">
                 <button class="menu-toggle" id="menuToggle">☰</button>
@@ -60,39 +66,37 @@
             </div>
         </header>
 
-        <!-- Overview Section -->
         <section id="overview" class="content-section active">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">$</div>
+                    <div class="stat-icon">₱</div>
                     <div class="stat-info">
-                        <h3>$12,450</h3>
+                        <h3>₱0.00</h3>
                         <p>Total Revenue Today</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">□</div>
                     <div class="stat-info">
-                        <h3>156</h3>
+                        <h3>0</h3>
                         <p>Orders Today</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">◉</div>
                     <div class="stat-info">
-                        <h3>23</h3>
+                        <h3>0</h3>
                         <p>Active Employees</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">★</div>
                     <div class="stat-info">
-                        <h3>4.8</h3>
+                        <h3>0.0</h3>
                         <p>Average Rating</p>
                     </div>
                 </div>
             </div>
-
             <div class="charts-grid">
                 <div class="chart-card">
                     <h3>Recent Orders</h3>
@@ -105,77 +109,44 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>#1234</td>
-                                <td>John Doe</td>
-                                <td>$25.50</td>
-                                <td><span class="status completed">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td>#1235</td>
-                                <td>Jane Smith</td>
-                                <td>$18.00</td>
-                                <td><span class="status pending">Pending</span></td>
-                            </tr>
-                            <tr>
-                                <td>#1236</td>
-                                <td>Bob Wilson</td>
-                                <td>$32.75</td>
-                                <td><span class="status processing">Processing</span></td>
-                            </tr>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- Inventory Section -->
         <section id="inventory" class="content-section">
             <div class="section-header">
                 <h2>Inventory Management</h2>
                 <button class="btn-primary" id="addInventoryBtn">+ Add Inventory Item</button>
             </div>
-
-            <!-- Stock Alerts -->
             <div class="alert-cards">
                 <div class="alert-card warning">
                     <div class="alert-icon">⚠</div>
                     <div class="alert-content">
                         <h4>Low Stock Alert</h4>
-                        <p>5 items below minimum quantity</p>
+                        <p>0 items below minimum quantity</p>
                     </div>
                 </div>
                 <div class="alert-card danger">
                     <div class="alert-icon">✕</div>
                     <div class="alert-content">
                         <h4>Out of Stock</h4>
-                        <p>2 items need immediate restock</p>
+                        <p>0 items need immediate restock</p>
                     </div>
                 </div>
                 <div class="alert-card success">
                     <div class="alert-icon">✓</div>
                     <div class="alert-content">
                         <h4>Well Stocked</h4>
-                        <p>15 items in good supply</p>
+                        <p>0 items in good supply</p>
                     </div>
                 </div>
             </div>
-
-            <!-- Inventory Table -->
             <div class="inventory-container">
                 <div class="table-controls">
                     <input type="text" class="search-input" placeholder="Search inventory..." id="inventorySearch">
-                    <select class="filter-select">
-                        <option>All Categories</option>
-                        <option>Coffee Beans</option>
-                        <option>Milk & Dairy</option>
-                        <option>Syrups</option>
-                        <option>Cups & Packaging</option>
-                        <option>Other Supplies</option>
-                    </select>
                 </div>
-
                 <table class="data-table inventory-table">
                     <thead>
                         <tr>
@@ -189,84 +160,18 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="inventoryTableBody">
-                        <tr>
-                            <td><strong>Arabica Coffee Beans</strong></td>
-                            <td>Coffee Beans</td>
-                            <td>25 kg</td>
-                            <td>kg</td>
-                            <td>10 kg</td>
-                            <td><span class="status-badge good">Good Stock</span></td>
-                            <td>Dec 7, 2024</td>
-                            <td>
-                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
-                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
-                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Whole Milk</strong></td>
-                            <td>Milk & Dairy</td>
-                            <td>8 L</td>
-                            <td>L</td>
-                            <td>15 L</td>
-                            <td><span class="status-badge low">Low Stock</span></td>
-                            <td>Dec 7, 2024</td>
-                            <td>
-                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
-                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
-                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Vanilla Syrup</strong></td>
-                            <td>Syrups</td>
-                            <td>0 bottles</td>
-                            <td>bottles</td>
-                            <td>5 bottles</td>
-                            <td><span class="status-badge out">Out of Stock</span></td>
-                            <td>Dec 6, 2024</td>
-                            <td>
-                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
-                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
-                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Paper Cups (16oz)</strong></td>
-                            <td>Cups & Packaging</td>
-                            <td>500 pcs</td>
-                            <td>pcs</td>
-                            <td>200 pcs</td>
-                            <td><span class="status-badge good">Good Stock</span></td>
-                            <td>Dec 7, 2024</td>
-                            <td>
-                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
-                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
-                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Caramel Syrup</strong></td>
-                            <td>Syrups</td>
-                            <td>3 bottles</td>
-                            <td>bottles</td>
-                            <td>5 bottles</td>
-                            <td><span class="status-badge low">Low Stock</span></td>
-                            <td>Dec 6, 2024</td>
-                            <td>
-                                <button class="btn-icon" onclick="updateStock(this)">↻</button>
-                                <button class="btn-icon" onclick="editInventory(this)">✎</button>
-                                <button class="btn-icon danger" onclick="deleteInventory(this)">✕</button>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="inventoryTableBody"></tbody>
                 </table>
             </div>
 
-            <!-- Stock History -->
             <div class="stock-history">
-                <h3>Recent Stock Movements</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                    <h3 style="margin: 0;">Recent Stock Movements</h3>
+                    <button id="downloadStockBtn" class="btn-secondary"
+                        style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                        📥 Download Report
+                    </button>
+                </div>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -277,81 +182,28 @@
                             <th>Performed By</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>Dec 7, 2024 10:30 AM</td>
-                            <td>Arabica Coffee Beans</td>
-                            <td><span class="action-badge in">Stock In</span></td>
-                            <td>+10 kg</td>
-                            <td>Admin</td>
-                        </tr>
-                        <tr>
-                            <td>Dec 7, 2024 9:15 AM</td>
-                            <td>Whole Milk</td>
-                            <td><span class="action-badge out">Stock Out</span></td>
-                            <td>-5 L</td>
-                            <td>Employee</td>
-                        </tr>
-                        <tr>
-                            <td>Dec 6, 2024 3:45 PM</td>
-                            <td>Vanilla Syrup</td>
-                            <td><span class="action-badge out">Stock Out</span></td>
-                            <td>-2 bottles</td>
-                            <td>Employee</td>
-                        </tr>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Products Section -->
         <section id="products" class="content-section">
             <div class="section-header">
                 <h2>Product Management</h2>
                 <button class="btn-primary" id="addProductBtn">+ Add New Product</button>
             </div>
-            <div class="products-grid">
-                <div class="product-card">
-                    <img src="../landing/assets/espresso.jpg" alt="Espresso">
-                    <h4>Classic Espresso</h4>
-                    <p class="product-price">$3.50</p>
-                    <div class="product-actions">
-                        <button class="btn-edit">Edit</button>
-                        <button class="btn-delete">Delete</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <img src="../landing/assets/cappuccino.jpg" alt="Cappuccino">
-                    <h4>Cappuccino</h4>
-                    <p class="product-price">$4.50</p>
-                    <div class="product-actions">
-                        <button class="btn-edit">Edit</button>
-                        <button class="btn-delete">Delete</button>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <img src="../landing/assets/latte.jpg" alt="Latte">
-                    <h4>Caffè Latte</h4>
-                    <p class="product-price">$4.75</p>
-                    <div class="product-actions">
-                        <button class="btn-edit">Edit</button>
-                        <button class="btn-delete">Delete</button>
-                    </div>
-                </div>
-            </div>
+            <div class="products-grid"></div>
         </section>
 
-        <!-- Orders Section -->
         <section id="orders" class="content-section">
             <h2>Order Management</h2>
             <div class="filters">
-                <select class="filter-select">
-                    <option>All Orders</option>
-                    <option>Pending</option>
-                    <option>Processing</option>
-                    <option>Completed</option>
+                <select class="filter-select" id="orderStatusFilter">
+                    <option value="All Orders">All Orders</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Completed">Completed</option>
                 </select>
-                <input type="date" class="filter-date">
             </div>
             <table class="data-table">
                 <thead>
@@ -365,30 +217,10 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>#1234</td>
-                        <td>John Doe</td>
-                        <td>Dec 5, 2024</td>
-                        <td>2</td>
-                        <td>$25.50</td>
-                        <td><span class="status completed">Completed</span></td>
-                        <td><button class="btn-view">View</button></td>
-                    </tr>
-                    <tr>
-                        <td>#1235</td>
-                        <td>Jane Smith</td>
-                        <td>Dec 5, 2024</td>
-                        <td>1</td>
-                        <td>$18.00</td>
-                        <td><span class="status pending">Pending</span></td>
-                        <td><button class="btn-view">View</button></td>
-                    </tr>
-                </tbody>
+                <tbody id="ordersTableBody"></tbody>
             </table>
         </section>
 
-        <!-- Employees Section -->
         <section id="employees" class="content-section">
             <div class="section-header">
                 <h2>Employee Management</h2>
@@ -404,32 +236,10 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>Sarah Johnson</td>
-                        <td>sarah@cafenowa.com</td>
-                        <td>Barista</td>
-                        <td><span class="status active">Active</span></td>
-                        <td>
-                            <button class="btn-edit">Edit</button>
-                            <button class="btn-delete">Remove</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Mike Brown</td>
-                        <td>mike@cafenowa.com</td>
-                        <td>Cashier</td>
-                        <td><span class="status active">Active</span></td>
-                        <td>
-                            <button class="btn-edit">Edit</button>
-                            <button class="btn-delete">Remove</button>
-                        </td>
-                    </tr>
-                </tbody>
+                <tbody></tbody>
             </table>
         </section>
 
-        <!-- Customers Section -->
         <section id="customers" class="content-section">
             <h2>Customer Management</h2>
             <table class="data-table">
@@ -442,48 +252,29 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>John Doe</td>
-                        <td>john@example.com</td>
-                        <td>45</td>
-                        <td>$520.00</td>
-                        <td><button class="btn-view">View</button></td>
-                    </tr>
-                    <tr>
-                        <td>Jane Smith</td>
-                        <td>jane@example.com</td>
-                        <td>32</td>
-                        <td>$380.50</td>
-                        <td><button class="btn-view">View</button></td>
-                    </tr>
-                </tbody>
+                <tbody></tbody>
             </table>
         </section>
 
-        <!-- Analytics Section -->
         <section id="analytics" class="content-section">
             <h2>Sales Analytics</h2>
             <div class="analytics-grid">
                 <div class="analytics-card">
                     <h3>Weekly Revenue</h3>
-                    <p class="analytics-value">$45,230</p>
-                    <span class="analytics-trend positive">+12.5%</span>
+                    <p class="analytics-value">₱0.00</p> <span class="analytics-trend positive">Current Week</span>
                 </div>
                 <div class="analytics-card">
                     <h3>Monthly Revenue</h3>
-                    <p class="analytics-value">$182,450</p>
-                    <span class="analytics-trend positive">+8.3%</span>
+                    <p class="analytics-value">₱0.00</p> <span class="analytics-trend positive">Current Month</span>
                 </div>
                 <div class="analytics-card">
                     <h3>Best Selling Item</h3>
-                    <p class="analytics-value">Cappuccino</p>
-                    <span class="analytics-info">245 sold</span>
+                    <p class="analytics-value">-</p>
+                    <span class="analytics-info">0 sold</span>
                 </div>
             </div>
         </section>
 
-        <!-- Settings Section -->
         <section id="settings" class="content-section">
             <h2>Settings</h2>
             <div class="settings-form">
@@ -508,20 +299,20 @@
         </section>
     </div>
 
-    <!-- Add Inventory Modal -->
     <div id="addInventoryModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Add New Inventory Item</h2>
+            <h2 id="inventoryModalTitle">Add New Inventory Item</h2>
             <form id="addInventoryForm">
+                <input type="hidden" id="inventoryId">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Item Name *</label>
-                        <input type="text" required>
+                        <input type="text" id="invName" required>
                     </div>
                     <div class="form-group">
                         <label>Category *</label>
-                        <select required>
+                        <select id="invCategory" required>
                             <option value="">Select Category</option>
                             <option>Coffee Beans</option>
                             <option>Milk & Dairy</option>
@@ -534,36 +325,35 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Current Stock *</label>
-                        <input type="number" required>
+                        <input type="number" id="invStock" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label>Unit *</label>
-                        <input type="text" placeholder="e.g., kg, L, pcs" required>
+                        <input type="text" id="invUnit" placeholder="e.g., kg, L, pcs" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Minimum Quantity *</label>
-                        <input type="number" required>
+                        <input type="number" id="invMin" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label>Unit Cost</label>
-                        <input type="number" step="0.01" placeholder="0.00">
+                        <input type="number" id="invCost" step="0.01" placeholder="0.00">
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Supplier</label>
-                    <input type="text">
+                    <input type="text" id="invSupplier">
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Add Item</button>
+                    <button type="submit" class="btn-primary">Save Item</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Update Stock Modal -->
     <div id="updateStockModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -571,11 +361,11 @@
             <form id="updateStockForm">
                 <div class="form-group">
                     <label>Item Name</label>
-                    <input type="text" readonly value="Arabica Coffee Beans">
+                    <input type="text" readonly id="updateStockName">
                 </div>
                 <div class="form-group">
                     <label>Action *</label>
-                    <select required>
+                    <select required id="updateStockAction">
                         <option value="">Select Action</option>
                         <option value="in">Stock In (Add)</option>
                         <option value="out">Stock Out (Remove)</option>
@@ -584,11 +374,11 @@
                 </div>
                 <div class="form-group">
                     <label>Quantity *</label>
-                    <input type="number" required>
+                    <input type="number" step="0.01" required id="updateStockQty">
                 </div>
                 <div class="form-group">
                     <label>Notes</label>
-                    <textarea rows="3" placeholder="Reason for stock update..."></textarea>
+                    <textarea rows="3" placeholder="Reason for stock update..." id="updateStockNotes"></textarea>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
@@ -598,6 +388,289 @@
         </div>
     </div>
 
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="productModalTitle">Add New Product</h2>
+            <form id="addProductForm">
+                <input type="hidden" id="prodId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Product Name *</label>
+                        <input type="text" id="prodName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select id="prodCategory" required>
+                            <option value="Hot Coffee">Hot Coffee</option>
+                            <option value="Cold Brew">Cold Brew</option>
+                            <option value="Specialty">Specialty</option>
+                            <option value="Pastries">Pastries</option>
+                            <option value="Tea">Tea</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Price (₱) *</label> <input type="number" step="0.01" id="prodPrice" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Initial Stock *</label>
+                        <input type="number" id="prodStock" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Product Image</label>
+                    <input type="file" id="prodImage" accept="image/*">
+                    <small style="color: #666; font-size: 0.8em;">Accepted: .jpg, .png, .jpeg (Leave empty to keep
+                        existing)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea rows="3" id="prodDesc"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addEmployeeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="employeeModalTitle">Add New Employee</h2>
+            <form id="addEmployeeForm">
+                <input type="hidden" id="empId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" id="empName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role *</label>
+                        <select id="empRole" required>
+                            <option value="staff">Staff</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="empEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="empPhone">
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="empPassword" placeholder="Leave blank if not changing">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="viewOrderModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close">&times;</span>
+            <h2>Order Details <span id="viewOrderId">#---</span></h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Customer</label>
+                    <input type="text" id="viewOrderCustomer" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" id="viewOrderDate" readonly>
+                </div>
+            </div>
+            <h3>Items</h3>
+            <table class="data-table" style="margin-bottom: 1rem;">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="viewOrderItems"></tbody>
+            </table>
+            <div style="text-align: right; font-size: 1.2rem; font-weight: bold;">
+                Total: ₱<span id="viewOrderTotal">0.00</span> </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewCustomerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Customer Profile</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="viewCustName" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" id="viewCustEmail" readonly>
+                </div>
+            </div>
+            <div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1rem;">
+                <div class="stat-card" style="padding: 1rem;">
+                    <div class="stat-info">
+                        <h3 id="viewCustOrders">0</h3>
+                        <p>Total Orders</p>
+                    </div>
+                </div>
+                <div class="stat-card" style="padding: 1rem;">
+                    <div class="stat-info">
+                        <h3 id="viewCustSpent">₱0.00</h3>
+                        <p>Total Spent</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="logoutModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close">&times;</span>
+            <h2>Confirm Logout</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">Are you sure you want to log out?</p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" id="confirmLogoutBtn"
+                    style="background-color: var(--danger); border-color: var(--danger);">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Confirm Deletion</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">
+                Are you sure you want to delete this item? <br>
+                <span style="font-size: 0.9em; color: #ef4444;">This action cannot be undone.</span>
+            </p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="confirmDelete()"
+                    style="background-color: var(--danger); border-color: var(--danger);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteProductModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Confirm Deletion</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">
+                Are you sure you want to delete this product? <br>
+                <span style="font-size: 0.9em; color: #ef4444;">This action cannot be undone.</span>
+            </p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="confirmDeleteProduct()"
+                    style="background-color: var(--danger); border-color: var(--danger);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteEmployeeModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Confirm Removal</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">
+                Are you sure you want to remove this employee? <br>
+                <span style="font-size: 0.9em; color: #ef4444;">They will be marked as inactive.</span>
+            </p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="confirmDeleteEmployee()"
+                    style="background-color: var(--danger); border-color: var(--danger);">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteScheduleModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Confirm Removal</h2>
+            <p style="margin-bottom: 2rem; color: #6b7280;">
+                Are you sure you want to remove this shift? <br>
+                <span style="font-size: 0.9em; color: #ef4444;">This action cannot be undone.</span>
+            </p>
+            <div class="modal-actions" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="confirmDeleteSchedule()"
+                    style="background-color: var(--danger); border-color: var(--danger);">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="scheduleModalTitle">Manage Schedule</h2>
+
+            <form id="addScheduleForm"
+                style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <input type="hidden" id="scheduleUserId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.85em;">Day</label>
+                        <select id="schedDay" required style="padding: 8px; width: 100%;">
+                            <option>Monday</option>
+                            <option>Tuesday</option>
+                            <option>Wednesday</option>
+                            <option>Thursday</option>
+                            <option>Friday</option>
+                            <option>Saturday</option>
+                            <option>Sunday</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.85em;">Start Time</label>
+                        <input type="time" id="schedStart" required style="padding: 8px; width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.85em;">End Time</label>
+                        <input type="time" id="schedEnd" required style="padding: 8px; width: 100%;">
+                    </div>
+                    <button type="submit" class="btn-primary" style="padding: 8px 15px;">+ Add</button>
+                </div>
+            </form>
+
+            <h3>Current Shifts</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <script src="admin-script.js"></script>
 </body>
+
 </html>

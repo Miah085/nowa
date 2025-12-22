@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <nav class="navbar">
         <div class="nav-container">
@@ -23,56 +25,37 @@
                     <span class="cart-icon">🛒</span>
                     <span class="cart-count" id="cartCount">0</span>
                 </button>
-                <a href="../login/login.html" class="btn-login" id="loginBtn">Login</a>
+                <a href="../Login/login.html" class="btn-login" id="loginBtn">Login</a>
                 <div class="user-profile" id="userProfile" style="display: none;">
                     <div class="profile-trigger" id="profileTrigger">
                         <div class="profile-avatar" id="profileAvatar">U</div>
                         <span class="profile-name" id="profileName">User</span>
-                        <span class="profile-arrow">▼</span>
+                        <i class="fas fa-chevron-down profile-arrow"></i>
                     </div>
                     <div class="profile-dropdown" id="profileDropdown">
-                        <a href="#" id="viewProfileBtn"><span></span> View Profile</a>
-                        <a href="#" id="myOrdersBtn"><span></span> My Orders</a>
-                        <a href="#" id="logoutBtn"><span></span> Logout</a>
+                        <a href="#" id="myOrdersBtn"><i class="fas fa-box"></i> My Orders</a>
+                        <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
                     </div>
                 </div>
-                <button class="order-btn" id="orderNowBtn">Order Now</button>
-            </div>
-            <div class="hamburger" id="hamburger">
-                <span></span><span></span><span></span>
+                <div class="hamburger" id="hamburger">
+                    <span></span><span></span><span></span>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h2>Your Cart</h2>
-            <button class="close-cart" id="closeCart">&times;</button>
-        </div>
-        <div class="cart-items" id="cartItems">
-            <p class="empty-cart">Your cart is empty</p>
-        </div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total:</span>
-                <span id="cartTotal">$0.00</span>
-            </div>
-            <button class="checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
-        </div>
-    </div>
-    <div class="cart-overlay" id="cartOverlay"></div>
-
     <section id="home" class="hero">
         <div class="hero-content">
-            <h1 class="hero-title">Where Every Cup Tells a Story</h1>
-            <p class="hero-subtitle">Experience the finest handcrafted coffee in town</p>
+            <h1 class="hero-title">Experience the Perfect Brew</h1>
+            <p class="hero-subtitle">Artisan coffee, roasted to perfection and brewed with passion.</p>
             <div class="hero-buttons">
-                <button class="btn-primary" onclick="scrollToMenu()">Explore Menu</button>
-                <button class="btn-secondary" onclick="scrollToContact()">Visit Us</button>
+                <button class="btn-primary" id="heroMenuBtn">Explore Menu</button>
+                <button class="btn-secondary" id="heroVisitBtn">Visit Us</button>
             </div>
         </div>
         <div class="scroll-indicator">
-            <span>Scroll Down</span><div class="scroll-arrow"></div>
+            <span>Scroll Down</span>
+            <div class="scroll-arrow"></div>
         </div>
     </section>
 
@@ -80,16 +63,26 @@
         <div class="container">
             <div class="about-content">
                 <div class="about-image">
-                    <img src="assets/interior.jpg" alt="Cafe Interior">
+                    <img src="assets/interior.jpg" alt="Café Interior" onerror="this.src='assets/cup.png'">
                 </div>
                 <div class="about-text">
                     <span class="section-label">Our Story</span>
-                    <h2>Crafted With Passion</h2>
-                    <p>At Café Nowa, we believe that coffee is more than just a beverage—it's an experience. Since 2020, we've been dedicated to sourcing the finest beans and crafting each cup with care and precision.</p>
+                    <h2>More Than Just Coffee</h2>
+                    <p>Founded in 2020, Café Nowa began with a simple mission: to serve the finest coffee in a warm,
+                        welcoming atmosphere.</p>
                     <div class="stats">
-                        <div class="stat-item"><h3>500+</h3><p>Daily Customers</p></div>
-                        <div class="stat-item"><h3>50+</h3><p>Coffee Varieties</p></div>
-                        <div class="stat-item"><h3>4.9★</h3><p>Customer Rating</p></div>
+                        <div class="stat-item">
+                            <h3>5k+</h3>
+                            <p>Happy Customers</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>15+</h3>
+                            <p>Coffee Varieties</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>4.9</h3>
+                            <p>Average Rating</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -99,33 +92,37 @@
     <section id="menu" class="menu">
         <div class="container">
             <div class="section-header">
-                <span class="section-label">Our Menu</span>
-                <h2>Signature Beverages</h2>
-                <p>Handcrafted with love, served with passion</p>
+                <span class="section-label">Discover</span>
+                <h2>Our Menu</h2>
+                <p>Handcrafted beverages and delicious treats made with love.</p>
             </div>
 
             <div class="menu-categories">
                 <button class="category-btn active" data-category="all">All</button>
-                <button class="category-btn" data-category="Hot Coffee">Hot Coffee</button>
-                <button class="category-btn" data-category="Cold Brew">Cold Brew</button>
-                <button class="category-btn" data-category="Specialty">Specialty</button>
+                <button class="category-btn" data-category="coffee">Coffee</button>
+                <button class="category-btn" data-category="tea">Tea</button>
+                <button class="category-btn" data-category="pastries">Pastries</button>
             </div>
 
             <div class="menu-grid" id="menuGrid">
-                </div>
+            </div>
+        </div>
     </section>
 
     <section id="gallery" class="gallery">
         <div class="container">
             <div class="section-header">
-                <span class="section-label">Gallery</span>
-                <h2>Moments at Café Nowa</h2>
+                <h2>Gallery</h2>
             </div>
             <div class="gallery-grid">
-                <div class="gallery-item"><img src="assets/gallery1.jpg" alt="Coffee Art"></div>
-                <div class="gallery-item"><img src="assets/gallery2.jpg" alt="Barista"></div>
-                <div class="gallery-item"><img src="assets/gallery3.jpg" alt="Interior"></div>
-                <div class="gallery-item"><img src="assets/gallery4.jpg" alt="Coffee Beans"></div>
+                <div class="gallery-item"><img src="assets/gallery1.jpg" alt="Gallery 1"
+                        onerror="this.style.display='none'"></div>
+                <div class="gallery-item"><img src="assets/gallery2.jpg" alt="Gallery 2"
+                        onerror="this.style.display='none'"></div>
+                <div class="gallery-item"><img src="assets/gallery3.jpg" alt="Gallery 3"
+                        onerror="this.style.display='none'"></div>
+                <div class="gallery-item"><img src="assets/gallery4.jpg" alt="Gallery 4"
+                        onerror="this.style.display='none'"></div>
             </div>
         </div>
     </section>
@@ -134,17 +131,26 @@
         <div class="container">
             <div class="contact-content">
                 <div class="contact-info">
-                    <span class="section-label">Get In Touch</span>
-                    <h2>Visit Us Today</h2>
-                    <div class="info-item"><h4>Location</h4><p>123 Coffee Street, Mendez-Nuñez<br>Calabarzon, Philippines</p></div>
-                    <div class="info-item"><h4>Hours</h4><p>Mon - Fri: 7:00 AM - 9:00 PM<br>Sat - Sun: 8:00 AM - 10:00 PM</p></div>
-                    <div class="info-item"><h4>Contact</h4><p>Phone: +63 123 456 7890<br>Email: hello@cafenowa.com</p></div>
+                    <span class="section-label">Visit Us</span>
+                    <h2>Get in Touch</h2>
+                    <div class="info-item">
+                        <h4>Location</h4>
+                        <p>123 Coffee Street, Brew City, BC 12345</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Hours</h4>
+                        <p>Mon - Fri: 7am - 8pm<br>Sat - Sun: 8am - 9pm</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Contact</h4>
+                        <p>hello@cafenowa.com<br>(555) 123-4567</p>
+                    </div>
                 </div>
                 <div class="contact-form">
                     <form id="contactForm">
-                        <input type="text" placeholder="Your Name" required>
-                        <input type="email" placeholder="Your Email" required>
-                        <textarea placeholder="Your Message" rows="5" required></textarea>
+                        <input type="text" name="name" placeholder="Your Name" required>
+                        <input type="email" name="email" placeholder="Your Email" required>
+                        <textarea name="message" rows="5" placeholder="Message" required></textarea>
                         <button type="submit" class="btn-primary">Send Message</button>
                     </form>
                 </div>
@@ -152,41 +158,77 @@
         </div>
     </section>
 
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart" id="closeCart">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-footer">
+            <div class="cart-total"><span>Total:</span><span id="cartTotal">$0.00</span></div>
+            <button class="checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <div class="modal" id="alertModal">
+        <div class="modal-content alert-content">
+            <span class="close" id="closeAlert">&times;</span>
+            <div class="confirmation-icon"
+                style="background-color: var(--primary-color); width: 60px; height: 60px; font-size: 2rem;">!</div>
+            <h2 id="alertTitle">Notice</h2>
+            <p id="alertMessage" style="margin: 15px 0; color: var(--text-light);">Message goes here</p>
+            <button class="btn-primary btn-wide" id="alertOkBtn">OK</button>
+        </div>
+    </div>
+
     <div class="modal" id="checkoutModal">
-        <div class="modal-content checkout-modal">
+        <div class="modal-content">
             <span class="close" id="closeCheckout">&times;</span>
-            <h2>Complete Your Order</h2>
-            <div class="checkout-summary">
-                <h3>Order Summary</h3>
-                <div id="checkoutItems"></div>
-                <div class="checkout-total">
-                    <strong>Total:</strong>
-                    <strong id="checkoutTotal">$0.00</strong>
+            <h2>Checkout</h2>
+            <div class="checkout-summary" id="checkoutItems"></div>
+
+            <div class="checkout-total"><strong>Total:</strong><span id="checkoutTotal">$0.00</span></div>
+
+            <div class="payment-section" style="margin: 20px 0;">
+                <h3 style="margin-bottom: 10px; font-size: 1.1rem; color: #2c2420;">Payment Method</h3>
+                <div class="payment-options">
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="cash" checked>
+                        <span class="custom-radio"></span>
+                        Cash
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="card">
+                        <span class="custom-radio"></span>
+                        Card
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="E-wallet">
+                        <span class="custom-radio"></span>
+                        E-Wallet
+                    </label>
                 </div>
             </div>
-            <button class="btn-primary place-order-btn" id="placeOrderBtn">Place Order</button>
+
+            <button class="place-order-btn" id="placeOrderBtn">Confirm Order</button>
         </div>
     </div>
 
     <div class="modal" id="confirmationModal">
         <div class="modal-content confirmation-modal">
+            <span class="close" id="closeConfirmation">&times;</span>
             <div class="confirmation-icon">✓</div>
-            <h2>Order Placed Successfully!</h2>
-            <p>Your order number is:</p>
-            <div class="order-code" id="orderCode">ABC123</div>
-            
-            <div id="orderTimer" style="font-size: 1.2rem; font-weight: bold; color: #d9534f; margin: 10px 0;">
-                Code Expires in: 20:00
-            </div>
+            <h2>Order Placed!</h2>
+            <p>Order Code:</p>
+            <div class="order-code" id="orderCode">-----</div>
 
-            <div id="orderSummary" class="order-summary-list"></div>
-            
-            <p class="order-instruction">Please show this code to the employee when picking up your order.</p>
-            
-            <div class="modal-actions-center">
-                <button class="btn-primary btn-wide" id="closeConfirmation">Got it!</button>
-                <button class="btn-outline" id="backToOrdersBtn" style="display:none; margin-top: 10px;">Back</button>
-            </div>
+            <div id="orderSummary"
+                style="text-align: left; margin: 15px 0; background: #f9f9f9; padding: 10px; border-radius: 8px;"></div>
+
+            <button class="btn-primary btn-wide" id="closeConfirmBtn">Got it!</button>
+            <button class="btn-secondary btn-wide" id="backToOrdersBtn"
+                style="display:none; margin-top:10px;">Back</button>
         </div>
     </div>
 
@@ -195,28 +237,20 @@
             <span class="close" id="closeOrders">&times;</span>
             <h2>My Orders</h2>
             <div class="orders-list" id="ordersList">
-                <p class="no-orders">No orders yet</p>
+                <p class="no-orders">Loading orders...</p>
             </div>
         </div>
     </div>
 
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section"><h3>Café Nowa</h3><p>Brewing happiness, one cup at a time.</p></div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul><li><a href="#home">Home</a></li><li><a href="#about">About</a></li><li><a href="#menu">Menu</a></li><li><a href="#contact">Contact</a></li></ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Follow Us</h4>
-                    <div class="social-links"><a href="#">Facebook</a><a href="#">Instagram</a><a href="#">Twitter</a></div>
-                </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Café Nowa. All rights reserved.</p>
             </div>
-            <div class="footer-bottom"><p>&copy; 2024 Café Nowa. All rights reserved.</p></div>
         </div>
     </footer>
 
     <script src="script.js"></script>
 </body>
+
 </html>

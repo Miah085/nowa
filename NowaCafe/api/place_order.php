@@ -1,12 +1,9 @@
 <?php
+//
 header('Content-Type: application/json');
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type");
-
+session_set_cookie_params(0, '/');
+session_start(); 
 require 'db_connect.php'; 
-
-// Set Timezone to match your location (Philippines)
 date_default_timezone_set('Asia/Manila'); 
 
 function generateOrderCode() {
@@ -19,11 +16,14 @@ if (isset($data['email']) && isset($data['items']) && isset($data['total'])) {
     $email = $data['email'];
     $items = $data['items'];
     $total_amount = $data['total'];
+    // Default to 'cash' if missing
+    $payment_method = isset($data['payment_method']) ? $data['payment_method'] : 'cash'; 
     $token = generateOrderCode();
 
     try {
         $conn->beginTransaction();
 
+        // 1. Validate User
         $stmt = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -31,34 +31,33 @@ if (isset($data['email']) && isset($data['items']) && isset($data['total'])) {
         if (!$user) throw new Exception("User not found.");
         $user_id = $user['user_id'];
 
-        // Insert Order
-        $sql = "INSERT INTO transactions (user_id, order_token, total_amount, status, transaction_date) VALUES (?, ?, ?, 'Pending', NOW())";
+        // 2. Insert Transaction Header (WITH PAYMENT METHOD)
+        $sql = "INSERT INTO transactions (user_id, order_token, total_amount, status, payment_method, transaction_date) VALUES (?, ?, ?, 'Pending', ?, NOW())";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$user_id, $token, $total_amount]);
+        $stmt->execute([$user_id, $token, $total_amount, $payment_method]);
         $transaction_id = $conn->lastInsertId();
 
-        // Insert Items
+        // 3. Insert Items
         $sql_item = "INSERT INTO transaction_items (transaction_id, product_id, quantity, subtotal) VALUES (?, ?, ?, ?)";
         $stmt_item = $conn->prepare($sql_item);
 
         foreach ($items as $item) {
             $subtotal = $item['price'] * $item['quantity'];
-            $stmt_item->execute([$transaction_id, $item['id'], $item['quantity'], $subtotal]);
+            $pid = isset($item['id']) ? $item['id'] : $item['product_id']; 
+            $stmt_item->execute([$transaction_id, $pid, $item['quantity'], $subtotal]);
         }
+
+        // 4. CLEAR THE CART from Database for this user
+        $clear_cart = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
+        $clear_cart->execute([$user_id]);
 
         $conn->commit();
         
-        // Calculate Expiration Time (Now + 20 mins)
-        // We use DB time to be consistent
-        $stmt_time = $conn->query("SELECT DATE_ADD(transaction_date, INTERVAL 20 MINUTE) as expiry FROM transactions WHERE transaction_id = $transaction_id");
-        $expiry = $stmt_time->fetchColumn();
-
         echo json_encode([
             "success" => true, 
             "message" => "Order placed!", 
             "id" => $transaction_id,
-            "order_token" => $token,
-            "expiry_time" => $expiry // Send this to frontend
+            "order_token" => $token
         ]);
 
     } catch (Exception $e) {
